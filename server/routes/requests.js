@@ -2,7 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { authenticateToken } = require('./auth');
-const { createZoomMeeting } = require('../utils/zoomApi');
+const { createGoogleMeetForSession } = require('../utils/googleMeet');
 
 const router = express.Router();
 const dbPath = path.join(__dirname, '../database/genconnect.db');
@@ -100,10 +100,10 @@ router.post('/:id/accept', authenticateToken, (req, res) => {
           }
           
           try {
-            // Create Zoom meeting (mock implementation)
-            const zoomMeeting = await createZoomMeeting(session);
+            // Create Google Meet for session
+            const googleMeet = createGoogleMeetForSession(session);
             
-            // Update session with Zoom details
+            // Update session with Google Meet details
             const updateQuery = `
               UPDATE sessions 
               SET zoom_meeting_id = ?, zoom_join_url = ?, zoom_start_url = ?
@@ -111,26 +111,26 @@ router.post('/:id/accept', authenticateToken, (req, res) => {
             `;
             
             db.run(updateQuery, [
-              zoomMeeting.id,
-              zoomMeeting.join_url,
-              zoomMeeting.start_url,
+              googleMeet.meeting_id,
+              googleMeet.meet_url,
+              googleMeet.meet_url, // Same URL for both join and start
               id
             ], async function(err) {
               if (err) {
-                console.error('Failed to update session with Zoom details:', err);
+                console.error('Failed to update session with Google Meet details:', err);
               }
               
               // Send calendar invites
-              await sendCalendarInvites(session, zoomMeeting);
+              await sendCalendarInvites(session, googleMeet);
               
               db.close();
               res.json({ 
-                message: 'Request accepted successfully. Zoom meeting created and calendar invites sent.',
-                meeting: zoomMeeting
+                message: 'Request accepted successfully. Google Meet created and calendar invites sent.',
+                meeting: googleMeet
               });
             });
           } catch (error) {
-            console.error('Error creating Zoom meeting:', error);
+            console.error('Error creating Google Meet:', error);
             db.close();
             res.json({ message: 'Request accepted successfully' });
           }

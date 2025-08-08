@@ -55,9 +55,9 @@ function initDatabase() {
       status TEXT CHECK(status IN ('pending', 'scheduled', 'active', 'completed', 'cancelled', 'declined')) DEFAULT 'pending',
       chat_room_id TEXT,
       request_expires_at DATETIME,
-      zoom_meeting_id TEXT,
-      zoom_join_url TEXT,
-      zoom_start_url TEXT,
+      zoom_meeting_id TEXT, -- Legacy column, now stores Google Meet ID
+      zoom_join_url TEXT,   -- Now stores Google Meet URL
+      zoom_start_url TEXT,  -- Now stores Google Meet URL
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tutee_id) REFERENCES users (id),
       FOREIGN KEY (tutor_id) REFERENCES users (id),

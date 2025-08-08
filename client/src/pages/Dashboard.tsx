@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import SessionRequests from '../components/SessionRequests';
-import SessionWorkspace from '../components/SessionWorkspace';
+import SessionArticleWorkspace from '../components/SessionArticleWorkspace';
 
 interface Session {
   id: number;
@@ -124,9 +124,9 @@ const Dashboard: React.FC = () => {
         <SessionRequests />
       )}
 
-      {/* Video Chat Modal */}
+      {/* Session Article Workspace */}
       {selectedSession && (
-        <SessionWorkspace
+        <SessionArticleWorkspace
           session={sessions.find(s => s.id === selectedSession)!}
           userRole={user.role}
           onClose={() => setSelectedSession(null)}
@@ -227,11 +227,11 @@ const Dashboard: React.FC = () => {
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   {session.status === 'scheduled' && (
-                    <button 
+                                        <button
                       onClick={() => setSelectedSession(session.id)}
                       className="btn btn-primary"
                     >
-                      Join Session
+                      📚 Open Session Workspace
                     </button>
                   )}
                   
