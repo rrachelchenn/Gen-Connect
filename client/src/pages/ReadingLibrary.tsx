@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 interface Reading {
   id: number;
@@ -33,7 +34,7 @@ const ReadingLibrary: React.FC = () => {
 
   const fetchReadings = async () => {
     try {
-      const response = await axios.get('/api/readings');
+      const response = await axios.get(`${API_BASE_URL}/readings`);
       setReadings(response.data);
     } catch (err: any) {
       setError('Failed to load readings');

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import SessionRequests from '../components/SessionRequests';
 import VideoChat from '../components/VideoChat';
 
@@ -34,7 +35,7 @@ const Dashboard: React.FC = () => {
 
   const fetchSessions = async () => {
     try {
-      const response = await axios.get('/api/sessions/my-sessions');
+      const response = await axios.get(`${API_BASE_URL}/sessions/my-sessions`);
       setSessions(response.data);
     } catch (err: any) {
       console.error('Error fetching sessions:', err);

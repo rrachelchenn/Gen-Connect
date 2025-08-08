@@ -77,6 +77,38 @@ function initDatabase() {
       FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
+    // Create tutor profiles table
+    db.run(`CREATE TABLE IF NOT EXISTS tutor_profiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL UNIQUE,
+      age INTEGER,
+      industry TEXT,
+      specialties TEXT, -- JSON array of specialties
+      hourly_rate DECIMAL(6,2) DEFAULT 25.00,
+      total_sessions INTEGER DEFAULT 0,
+      average_rating DECIMAL(3,2) DEFAULT 0.00,
+      total_reviews INTEGER DEFAULT 0,
+      tutoring_style TEXT,
+      availability_hours TEXT,
+      experience_years INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    )`);
+
+    // Create tutor reviews table
+    db.run(`CREATE TABLE IF NOT EXISTS tutor_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tutor_id INTEGER NOT NULL,
+      reviewer_id INTEGER NOT NULL,
+      rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+      comment TEXT,
+      session_topic TEXT,
+      date DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (tutor_id) REFERENCES users (id),
+      FOREIGN KEY (reviewer_id) REFERENCES users (id)
+    )`);
+
     // Insert sample readings
     db.run(`INSERT OR IGNORE INTO readings (title, summary, content, difficulty_level, topic_tags) VALUES 
       ('Online Grocery Shopping Basics', 'Learn how to order groceries online safely and efficiently', 

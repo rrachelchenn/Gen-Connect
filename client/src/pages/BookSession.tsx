@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 interface Reading {
   id: number;
@@ -28,8 +29,11 @@ interface TimeSlot {
 
 const BookSession: React.FC = () => {
   const { readingId } = useParams<{ readingId: string }>();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  const tutorIdParam = searchParams.get('tutor');
   
   const [reading, setReading] = useState<Reading | null>(null);
   const [tutors, setTutors] = useState<Tutor[]>([]);
@@ -46,9 +50,19 @@ const BookSession: React.FC = () => {
   useEffect(() => {
     if (readingId) {
       fetchReading();
-      fetchTutors();
     }
+    fetchTutors(); // Always fetch tutors, even without a reading
   }, [readingId]);
+
+  // Pre-select tutor if provided in URL
+  useEffect(() => {
+    if (tutorIdParam && tutors.length > 0) {
+      const tutorId = parseInt(tutorIdParam);
+      if (tutors.find(t => t.id === tutorId)) {
+        setSelectedTutor(tutorId);
+      }
+    }
+  }, [tutorIdParam, tutors]);
 
   useEffect(() => {
     if (selectedTutor && selectedDate) {
@@ -61,7 +75,7 @@ const BookSession: React.FC = () => {
 
   const fetchReading = async () => {
     try {
-      const response = await axios.get(`/api/readings/${readingId}`);
+      const response = await axios.get(`${API_BASE_URL}/readings/${readingId}`);
       setReading(response.data);
     } catch (err) {
       setError('Failed to load reading details');
@@ -70,7 +84,7 @@ const BookSession: React.FC = () => {
 
   const fetchTutors = async () => {
     try {
-      const response = await axios.get('/api/users/tutors');
+      const response = await axios.get(`${API_BASE_URL}/users/tutors`);
       setTutors(response.data);
     } catch (err) {
       setError('Failed to load tutors');
@@ -107,7 +121,7 @@ const BookSession: React.FC = () => {
       const [hours, minutes] = selectedSlot.start_time.split(':');
       sessionDateTime.setHours(parseInt(hours), parseInt(minutes));
 
-      await axios.post('/api/sessions/book', {
+      await axios.post(`${API_BASE_URL}/sessions/book`, {
         tutorId: selectedTutor,
         readingId: parseInt(readingId!),
         sessionDate: sessionDateTime.toISOString(),
@@ -135,7 +149,7 @@ const BookSession: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Book a Session 📅</h1>
+      <h1>{reading ? 'Book a Session' : 'Book a Session with a Tutor'} 📅</h1>
       
       {reading && (
         <div className="card" style={{ marginBottom: '2rem' }}>

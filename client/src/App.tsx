@@ -11,6 +11,7 @@ import BookSession from './pages/BookSession';
 import LiveSession from './pages/LiveSession';
 import Feedback from './pages/Feedback';
 import Profile from './pages/Profile';
+import BrowseTutors from './pages/BrowseTutors';
 import './App.css';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -62,7 +63,17 @@ function App() {
                   <ReadingLibrary />
                 </PrivateRoute>
               } />
+              <Route path="/browse-tutors" element={
+                <PrivateRoute>
+                  <BrowseTutors />
+                </PrivateRoute>
+              } />
               <Route path="/book-session/:readingId" element={
+                <PrivateRoute>
+                  <BookSession />
+                </PrivateRoute>
+              } />
+              <Route path="/book-session" element={
                 <PrivateRoute>
                   <BookSession />
                 </PrivateRoute>

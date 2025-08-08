@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 interface SessionRequest {
   id: number;
@@ -33,7 +34,7 @@ const SessionRequests: React.FC = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await axios.get('/api/requests/pending');
+      const response = await axios.get(`${API_BASE_URL}/requests/pending`);
       setRequests(response.data);
     } catch (err: any) {
       console.error('Error fetching requests:', err);
@@ -50,7 +51,7 @@ const SessionRequests: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get('/api/requests/stats');
+      const response = await axios.get(`${API_BASE_URL}/requests/stats`);
       setStats(response.data);
     } catch (err: any) {
       console.error('Error fetching stats:', err);
@@ -66,7 +67,7 @@ const SessionRequests: React.FC = () => {
   const handleAccept = async (requestId: number) => {
     setProcessingRequest(requestId);
     try {
-      await axios.post(`/api/requests/${requestId}/accept`);
+      await axios.post(`${API_BASE_URL}/requests/${requestId}/accept`);
       setRequests(requests.filter(req => req.id !== requestId));
       fetchStats(); // Refresh stats
     } catch (err: any) {
@@ -79,7 +80,7 @@ const SessionRequests: React.FC = () => {
   const handleDecline = async (requestId: number) => {
     setProcessingRequest(requestId);
     try {
-      await axios.post(`/api/requests/${requestId}/decline`);
+      await axios.post(`${API_BASE_URL}/requests/${requestId}/decline`);
       setRequests(requests.filter(req => req.id !== requestId));
       fetchStats(); // Refresh stats
     } catch (err: any) {

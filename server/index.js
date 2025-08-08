@@ -12,9 +12,11 @@ const feedbackRoutes = require('./routes/feedback');
 const availabilityRoutes = require('./routes/availability');
 const requestRoutes = require('./routes/requests');
 const zoomRoutes = require('./routes/zoom');
+const tutorsRoutes = require('./routes/tutors');
 
 const { initDatabase } = require('./database/init');
 const { seedDemoUsers } = require('./database/seed');
+const { seedSampleTutors } = require('./database/seedTutors');
 
 const app = express();
 const server = http.createServer(app);
@@ -34,7 +36,10 @@ app.use(express.static(path.join(__dirname, '../client/build')));
 
 // Initialize database and seed demo users
 initDatabase();
-setTimeout(() => seedDemoUsers(), 1000); // Delay to ensure database is ready
+setTimeout(() => {
+  seedDemoUsers();
+  seedSampleTutors();
+}, 1000); // Delay to ensure database is ready
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -45,6 +50,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/zoom', zoomRoutes);
+app.use('/api/tutors', tutorsRoutes);
 
 // Socket.io for live sessions
 io.on('connection', (socket) => {

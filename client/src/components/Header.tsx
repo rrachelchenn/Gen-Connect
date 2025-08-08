@@ -25,6 +25,11 @@ const Header: React.FC = () => {
               <Link to="/readings" className="nav-link">
                 Reading Library
               </Link>
+              {user.role === 'tutee' && (
+                <Link to="/browse-tutors" className="nav-link">
+                  Browse Tutors
+                </Link>
+              )}
               {user.role === 'tutor' && (
                 <Link to="/profile" className="nav-link">
                   Availability
