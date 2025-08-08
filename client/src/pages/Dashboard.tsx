@@ -97,9 +97,14 @@ const Dashboard: React.FC = () => {
           </Link>
           
           {user.role === 'tutee' && (
-            <Link to="/readings" className="btn btn-outline" style={{ textAlign: 'center' }}>
-              📅 Book a Session
-            </Link>
+            <>
+              <Link to="/browse-tutors" className="btn btn-outline" style={{ textAlign: 'center' }}>
+                👩‍🎓 Browse Tutors
+              </Link>
+              <Link to="/book-session" className="btn btn-outline" style={{ textAlign: 'center' }}>
+                📅 Book a Session
+              </Link>
+            </>
           )}
           
           {user.role === 'tutor' && (
