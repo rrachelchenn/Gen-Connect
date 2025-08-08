@@ -28,14 +28,35 @@ router.post('/book', authenticateToken, (req, res) => {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 24);
   
-  const query = `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status, request_expires_at) 
-                 VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`;
+  // Try with request_expires_at column first, fallback if column doesn't exist
+  const queryWithExpiry = `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status, request_expires_at) 
+                           VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`;
   
-  db.run(query, [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId, expiresAt.toISOString()], function(err) {
-    if (err) {
+  const queryFallback = `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status) 
+                         VALUES (?, ?, ?, ?, ?, ?, 'pending')`;
+  
+  db.run(queryWithExpiry, [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId, expiresAt.toISOString()], function(err) {
+    if (err && err.message.includes('no such column: request_expires_at')) {
+      console.log('request_expires_at column not found, using fallback query');
+      // Fallback to query without request_expires_at column
+      db.run(queryFallback, [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId], function(fallbackErr) {
+        if (fallbackErr) {
+          console.error('Session booking error (fallback):', fallbackErr);
+          db.close();
+          return res.status(500).json({ error: 'Failed to create session request' });
+        }
+        handleSessionCreated.call(this);
+      });
+    } else if (err) {
+      console.error('Session booking error:', err);
       db.close();
       return res.status(500).json({ error: 'Failed to create session request' });
+    } else {
+      handleSessionCreated.call(this);
     }
+  });
+  
+  function handleSessionCreated() {
 
     // Fetch session details with user and reading info
     const sessionQuery = `
@@ -57,7 +78,7 @@ router.post('/book', authenticateToken, (req, res) => {
       }
       res.status(201).json({ session, message: 'Session request sent successfully! The tutor will respond within 24 hours.' });
     });
-  });
+  }
 });
 
 // Get user's sessions
