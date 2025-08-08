@@ -61,8 +61,8 @@ https://meet.google.com/abc-defg-hij
     "timeZone": "America/New_York"
   },
   "attendees": [
-    { "email": "demo.student@genconnect.com" },
-    { "email": "demo.senior@genconnect.com" }
+    { "email": "rachel_chen@berkeley.edu" },
+    { "email": "rachelchen0211@gmail.com" }
   ],
   "conferenceData": {
     "conferenceSolutionKey": { "type": "hangoutsMeet" }
@@ -109,9 +109,9 @@ const calendar = google.calendar({ version: 'v3', auth });
 
 To test the Google Meet integration:
 
-1. **Login as tutee**: `demo.senior@genconnect.com` / `demo123`
+1. **Login as tutee**: `rachelchen0211@gmail.com` / `demo123`
 2. **Book a session** from Reading Library
-3. **Login as tutor**: `demo.student@genconnect.com` / `demo123`  
+3. **Login as tutor**: `rachel_chen@berkeley.edu` / `demo123`  
 4. **Accept the request** from dashboard
 5. **Check console logs** for generated calendar event and meet link
 6. **Open session workspace** and click "Join Google Meet"
