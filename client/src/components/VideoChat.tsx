@@ -12,9 +12,10 @@ interface VideoChatProps {
   };
   userRole: 'tutor' | 'tutee';
   onClose: () => void;
+  embedded?: boolean; // New prop for embedded mode
 }
 
-const VideoChat: React.FC<VideoChatProps> = ({ session, userRole, onClose }) => {
+const VideoChat: React.FC<VideoChatProps> = ({ session, userRole, onClose, embedded = false }) => {
   const [isJoining, setIsJoining] = useState(false);
   const [meetingStarted, setMeetingStarted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -137,6 +138,68 @@ const VideoChat: React.FC<VideoChatProps> = ({ session, userRole, onClose }) => 
               className="message-input"
             />
             <button className="send-btn">Send</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle embedded mode
+  if (embedded) {
+    // Auto-start meeting in embedded mode
+    if (!meetingStarted) {
+      setTimeout(() => setMeetingStarted(true), 500);
+    }
+    
+    return (
+      <div className="video-chat-embedded" style={{ width: '100%', height: '100%', position: 'relative', backgroundColor: '#000' }}>
+        <div className="meeting-container" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div className="meeting-header" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            padding: '0.75rem 1rem', 
+            backgroundColor: 'rgba(0,0,0,0.8)', 
+            color: 'white',
+            fontSize: '0.9rem'
+          }}>
+            <span>📹 {session.reading_title}</span>
+            <span>⏱️ {formatTime(timeElapsed)}</span>
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>Video Session Active</h3>
+              <p style={{ color: '#ccc' }}>
+                {userRole === 'tutor' 
+                  ? `Teaching ${session.tutee_name || 'Student'}` 
+                  : `Learning with ${session.tutor_name || 'Tutor'}`
+                }
+              </p>
+            </div>
+            
+            <div className="video-controls" style={{ display: 'flex', gap: '1rem' }}>
+              <button className="control-btn" style={{ padding: '0.75rem', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', cursor: 'pointer' }}>
+                🎤
+              </button>
+              <button className="control-btn" style={{ padding: '0.75rem', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', cursor: 'pointer' }}>
+                📹
+              </button>
+              <button 
+                onClick={toggleRecording} 
+                className="control-btn" 
+                style={{ 
+                  padding: '0.75rem', 
+                  borderRadius: '50%', 
+                  background: isRecording ? '#dc2626' : 'rgba(255,255,255,0.2)', 
+                  border: 'none', 
+                  color: 'white', 
+                  cursor: 'pointer' 
+                }}
+              >
+                {isRecording ? '⏹️' : '🔴'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

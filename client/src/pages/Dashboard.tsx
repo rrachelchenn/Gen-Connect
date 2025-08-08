@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import SessionRequests from '../components/SessionRequests';
-import VideoChat from '../components/VideoChat';
+import SessionWorkspace from '../components/SessionWorkspace';
 
 interface Session {
   id: number;
@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
 
       {/* Video Chat Modal */}
       {selectedSession && (
-        <VideoChat
+        <SessionWorkspace
           session={sessions.find(s => s.id === selectedSession)!}
           userRole={user.role}
           onClose={() => setSelectedSession(null)}

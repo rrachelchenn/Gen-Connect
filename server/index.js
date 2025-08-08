@@ -13,10 +13,12 @@ const availabilityRoutes = require('./routes/availability');
 const requestRoutes = require('./routes/requests');
 const zoomRoutes = require('./routes/zoom');
 const tutorsRoutes = require('./routes/tutors');
+const discussionsRoutes = require('./routes/discussions');
 
 const { initDatabase } = require('./database/init');
 const { seedDemoUsers } = require('./database/seed');
 const { seedSampleTutors } = require('./database/seedTutors');
+const { seedEnhancedReadings } = require('./database/seedEnhancedReadings');
 
 const app = express();
 const server = http.createServer(app);
@@ -39,6 +41,7 @@ initDatabase();
 setTimeout(() => {
   seedDemoUsers();
   seedSampleTutors();
+  seedEnhancedReadings();
 }, 1000); // Delay to ensure database is ready
 
 // Routes
@@ -51,6 +54,7 @@ app.use('/api/availability', availabilityRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/zoom', zoomRoutes);
 app.use('/api/tutors', tutorsRoutes);
+app.use('/api/discussions', discussionsRoutes);
 
 // Socket.io for live sessions
 io.on('connection', (socket) => {

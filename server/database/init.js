@@ -29,6 +29,7 @@ function initDatabase() {
       content TEXT NOT NULL,
       difficulty_level TEXT CHECK(difficulty_level IN ('easy', 'medium', 'hard')) NOT NULL,
       topic_tags TEXT,
+      discussion_questions TEXT, -- JSON array of questions
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -107,6 +108,32 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tutor_id) REFERENCES users (id),
       FOREIGN KEY (reviewer_id) REFERENCES users (id)
+    )`);
+
+    // Discussion answers table
+    db.run(`CREATE TABLE IF NOT EXISTS discussion_answers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL,
+      reading_id INTEGER NOT NULL,
+      tutee_id INTEGER NOT NULL,
+      question_index INTEGER NOT NULL,
+      answer TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (session_id) REFERENCES sessions (id),
+      FOREIGN KEY (reading_id) REFERENCES readings (id),
+      FOREIGN KEY (tutee_id) REFERENCES users (id)
+    )`);
+
+    // Session notes table
+    db.run(`CREATE TABLE IF NOT EXISTS session_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL UNIQUE,
+      tutor_notes TEXT,
+      discussion_notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (session_id) REFERENCES sessions (id)
     )`);
 
     // Insert sample readings

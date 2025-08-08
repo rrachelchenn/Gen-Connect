@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
+import DiscussionQuestions from '../components/DiscussionQuestions';
 
 interface Reading {
   id: number;
@@ -11,6 +12,7 @@ interface Reading {
   content: string;
   difficulty_level: 'easy' | 'medium' | 'hard';
   topic_tags: string;
+  discussion_questions?: string;
   created_at: string;
 }
 
@@ -195,9 +197,21 @@ const ReadingLibrary: React.FC = () => {
                     border: '1px solid #e5e7eb'
                   }}>
                     <h4 style={{ marginBottom: '1rem', color: '#1e40af' }}>Reading Content:</h4>
-                    <p style={{ lineHeight: 1.8, fontSize: '1.05rem' }}>
+                    <div style={{ lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '2rem', whiteSpace: 'pre-line' }}>
                       {reading.content}
-                    </p>
+                    </div>
+
+                    {/* Discussion Questions */}
+                    {reading.discussion_questions && user?.role === 'tutee' && (
+                      <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '1.5rem' }}>
+                        <DiscussionQuestions
+                          readingId={reading.id}
+                          tuteeId={user.id}
+                          questions={JSON.parse(reading.discussion_questions)}
+                          readOnly={false}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -471,3 +471,61 @@ p {
   background-color: #f3f4f6;
   color: #374151;
 }
+
+/* Discussion Questions Styles */
+.discussion-questions {
+  max-width: 100%;
+}
+
+.question-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.question-card:hover {
+  border-color: #3b82f6;
+}
+
+.question-header h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1e40af;
+}
+
+.answer-section .form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Session Workspace Styles */
+.session-workspace {
+  background: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.session-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 2rem;
+}
+
+.session-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.session-video {
+  flex: 1;
+  background: #000;
+  border-right: 1px solid #e5e7eb;
+}
+
+.session-discussion {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
