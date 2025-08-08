@@ -20,17 +20,19 @@ router.get('/browse', async (req, res) => {
     
     // If table doesn't exist, seed the sample tutors
     if (!row) {
-      console.log('Tutor profiles table missing, seeding sample tutors...');
+      console.log('🔧 Tutor profiles table missing, seeding sample tutors...');
       db.close();
       try {
         await seedSampleTutors();
+        console.log('✅ Seeding completed, retrying query...');
         // Retry the query after seeding
         return fetchTutors(res);
       } catch (seedErr) {
-        console.error('Error seeding tutors:', seedErr);
-        return res.status(500).json({ error: 'Failed to initialize tutors' });
+        console.error('❌ Error seeding tutors:', seedErr);
+        return res.status(500).json({ error: 'Failed to initialize tutors', details: seedErr.message });
       }
     } else {
+      console.log('📊 Tutor profiles table exists, fetching data...');
       // Table exists, proceed with query
       fetchTutorsFromDB(db, res);
     }

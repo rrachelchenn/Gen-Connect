@@ -8,6 +8,50 @@ async function seedSampleTutors() {
   const db = new sqlite3.Database(dbPath);
 
   try {
+    console.log('🎓 Starting tutor seeding process...');
+    
+    // First ensure the tables exist
+    await new Promise((resolve, reject) => {
+      db.run(`CREATE TABLE IF NOT EXISTS tutor_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        age INTEGER,
+        industry TEXT,
+        specialties TEXT,
+        hourly_rate DECIMAL(6,2) DEFAULT 25.00,
+        total_sessions INTEGER DEFAULT 0,
+        average_rating DECIMAL(3,2) DEFAULT 0.00,
+        total_reviews INTEGER DEFAULT 0,
+        tutoring_style TEXT,
+        availability_hours TEXT,
+        experience_years INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )`, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    await new Promise((resolve, reject) => {
+      db.run(`CREATE TABLE IF NOT EXISTS tutor_reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tutor_id INTEGER NOT NULL,
+        reviewer_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+        comment TEXT,
+        session_topic TEXT,
+        date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (tutor_id) REFERENCES users (id),
+        FOREIGN KEY (reviewer_id) REFERENCES users (id)
+      )`, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    console.log('📝 Tables created, hashing password...');
     const hashedPassword = await bcrypt.hash('demo123', 10);
 
     // Sample tutors with different backgrounds
@@ -206,9 +250,10 @@ async function seedSampleTutors() {
       }
     }
 
-    console.log('Sample tutors and reviews seeded successfully!');
+    console.log('✅ Sample tutors and reviews seeded successfully!');
   } catch (error) {
-    console.error('Error seeding tutors:', error);
+    console.error('❌ Error seeding tutors:', error);
+    throw error; // Re-throw so calling function knows it failed
   } finally {
     db.close();
   }
