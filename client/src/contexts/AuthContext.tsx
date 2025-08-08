@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 interface User {
   id: number;
@@ -65,7 +66,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       try {
-        const response = await axios.get('/api/auth/verify');
+        const response = await axios.get(`${API_BASE_URL}/auth/verify`);
         setUser(response.data.user);
       } catch (error) {
         console.error('Token verification failed:', error);
@@ -81,7 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
       const { token: newToken, user: userData } = response.data;
       
       localStorage.setItem('token', newToken);
@@ -94,7 +95,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signup = async (userData: SignupData) => {
     try {
-      const response = await axios.post('/api/auth/signup', userData);
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, userData);
       const { token: newToken, user: newUser } = response.data;
       
       localStorage.setItem('token', newToken);

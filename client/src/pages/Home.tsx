@@ -17,10 +17,10 @@ const Home: React.FC = () => {
         marginBottom: '3rem'
       }}>
         <h1 style={{ fontSize: '3rem', marginBottom: '1rem', color: 'white' }}>
-          Connecting Senior Citizens with College Students
+          Bridging the Digital Divide
         </h1>
         <p style={{ fontSize: '1.5rem', marginBottom: '2rem', opacity: 0.9 }}>
-          For tech tutoring sessions based on curated digital readings
+          Connecting tech-savvy college students with older adults who want to master modern technology
         </p>
         
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -52,65 +52,98 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Benefits Section */}
+      <section style={{ marginBottom: '4rem' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          Why Choose GenConnect?
+        </h2>
+        
+        <div className="grid grid-2">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👴👵</div>
+            <h3>For Older Adults</h3>
+            <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0 }}>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Patient, understanding tutors</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Step-by-step guidance</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ No judgment, just help</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Practical, real-world skills</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Safe, supportive environment</li>
+            </ul>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎓</div>
+            <h3>For College Students</h3>
+            <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0 }}>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Make a real difference</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Build teaching experience</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Flexible hours</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Help bridge the digital gap</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Earn while helping others</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section>
         <h2 style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          Browse Reading Topics
+          Essential Tech Skills for Modern Life
         </h2>
         
         <div className="grid grid-3">
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📱</div>
-            <h3>Digital Literacy</h3>
-            <p>Learn smartphone basics, apps, and digital communication.</p>
-            <div className="tag">Smartphones</div>
+            <h3>Smartphone Mastery</h3>
+            <p>Learn to use your phone confidently - from basic calls to apps and settings.</p>
+            <div className="tag">Basics</div>
             <div className="tag">Apps</div>
-            <div className="tag">Communication</div>
+            <div className="tag">Settings</div>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛒</div>
             <h3>Online Shopping</h3>
-            <p>Master online grocery shopping, e-commerce, and digital payments.</p>
+            <p>Shop safely online for groceries, essentials, and gifts with confidence.</p>
             <div className="tag">Shopping</div>
-            <div className="tag">Groceries</div>
+            <div className="tag">Safety</div>
             <div className="tag">Payments</div>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💬</div>
-            <h3>Write & Connect</h3>
-            <p>Understand modern slang, social media, and digital etiquette.</p>
+            <h3>Digital Communication</h3>
+            <p>Stay connected with family through text, email, and social media.</p>
+            <div className="tag">Texting</div>
+            <div className="tag">Email</div>
             <div className="tag">Social Media</div>
-            <div className="tag">Communication</div>
-            <div className="tag">Safety</div>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📹</div>
-            <h3>Video Calling</h3>
-            <p>Connect with family through video calls and virtual meetings.</p>
-            <div className="tag">Video Calls</div>
+            <h3>Video Calls</h3>
+            <p>See and talk to family and friends face-to-face, even when apart.</p>
+            <div className="tag">FaceTime</div>
+            <div className="tag">Zoom</div>
             <div className="tag">Family</div>
-            <div className="tag">Technology</div>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📸</div>
-            <h3>Creative Tech</h3>
-            <p>Take better photos, edit images, and share memories.</p>
-            <div className="tag">Photography</div>
-            <div className="tag">Creative</div>
+            <h3>Photo & Memories</h3>
+            <p>Take, organize, and share photos with family and friends.</p>
+            <div className="tag">Camera</div>
+            <div className="tag">Albums</div>
             <div className="tag">Sharing</div>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
-            <h3>Safety & Security</h3>
-            <p>Stay safe online with privacy settings and scam awareness.</p>
+            <h3>Online Safety</h3>
+            <p>Protect yourself from scams and keep your information secure.</p>
             <div className="tag">Privacy</div>
             <div className="tag">Security</div>
-            <div className="tag">Safety</div>
+            <div className="tag">Scam Prevention</div>
           </div>
         </div>
       </section>
@@ -124,30 +157,30 @@ const Home: React.FC = () => {
         <div className="grid grid-2">
           <div className="card">
             <div className="card-header">
-              <h3 className="card-title">📚 1. Choose a Reading</h3>
+              <h3 className="card-title">📚 1. Choose What to Learn</h3>
             </div>
-            <p>Browse our library of easy-to-understand guides on various tech topics. Each reading includes clear explanations and helpful tips.</p>
+            <p>Pick from our library of easy-to-follow guides on the tech skills that matter most in today's world.</p>
           </div>
           
           <div className="card">
             <div className="card-header">
-              <h3 className="card-title">📅 2. Book a Session</h3>
+              <h3 className="card-title">📅 2. Book Your Tutor</h3>
             </div>
-            <p>Schedule a one-on-one session with a friendly college student who can help you understand and practice what you've read.</p>
+            <p>Schedule a session with a patient college student who will guide you step-by-step through your learning.</p>
           </div>
           
           <div className="card">
             <div className="card-header">
-              <h3 className="card-title">💬 3. Learn Together</h3>
+              <h3 className="card-title">💬 3. Learn at Your Pace</h3>
             </div>
-            <p>Join your live session where you can ask questions, practice together, and get personalized help with your tech questions.</p>
+            <p>In your live session, ask questions, practice together, and get the personalized help you need.</p>
           </div>
           
           <div className="card">
             <div className="card-header">
-              <h3 className="card-title">✨ 4. Share Feedback</h3>
+              <h3 className="card-title">✨ 4. Build Confidence</h3>
             </div>
-            <p>After your session, share what you learned and get recommendations for follow-up resources or future topics to explore.</p>
+            <p>Gain the skills and confidence to use technology independently and stay connected with loved ones.</p>
           </div>
         </div>
       </section>
@@ -160,16 +193,16 @@ const Home: React.FC = () => {
           backgroundColor: '#f0f9ff',
           borderRadius: '12px'
         }}>
-          <h2 style={{ marginBottom: '1rem' }}>Ready to Start Learning?</h2>
+          <h2 style={{ marginBottom: '1rem' }}>Ready to Bridge the Digital Divide?</h2>
           <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
-            Join GenConnect today and connect with helpful tutors for personalized tech assistance.
+            Whether you want to learn modern technology or help others master it, GenConnect is here for you.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/signup" className="btn btn-primary btn-large">
-              Sign Up as Senior (Tutee)
+            <Link to="/signup?role=tutee" className="btn btn-primary btn-large">
+              I Want to Learn Tech
             </Link>
-            <Link to="/signup" className="btn btn-outline btn-large">
-              Join as College Tutor
+            <Link to="/signup?role=tutor" className="btn btn-outline btn-large">
+              I Want to Help Others
             </Link>
           </div>
         </section>

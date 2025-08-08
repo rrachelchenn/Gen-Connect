@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Signup: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,6 +19,17 @@ const Signup: React.FC = () => {
   
   const { signup } = useAuth();
   const navigate = useNavigate();
+
+  // Set role from URL parameter if provided
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'tutor' || roleParam === 'tutee') {
+      setFormData(prev => ({
+        ...prev,
+        role: roleParam as 'tutee' | 'tutor'
+      }));
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
