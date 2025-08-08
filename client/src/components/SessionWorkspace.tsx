@@ -13,6 +13,8 @@ interface SessionWorkspaceProps {
     duration_minutes: number;
     tutee_name?: string;
     tutor_name?: string;
+    tutee_id?: number;
+    tutor_id?: number;
   };
   userRole: 'tutor' | 'tutee';
   onClose: () => void;
@@ -232,11 +234,10 @@ const SessionWorkspace: React.FC<SessionWorkspaceProps> = ({
                 borderBottom: '1px solid #e5e7eb'
               }}
             >
-              {reading && reading.discussion_questions && (
+              {reading && reading.discussion_questions && session.tutee_id && (
                 <DiscussionQuestions
                   readingId={reading.id}
-                  sessionId={session.id}
-                  tuteeId={userRole === 'tutee' ? 1 : 1} // TODO: Get actual tutee ID
+                  tuteeId={session.tutee_id}
                   questions={JSON.parse(reading.discussion_questions)}
                   readOnly={userRole === 'tutor'}
                 />

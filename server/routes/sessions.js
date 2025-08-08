@@ -71,6 +71,7 @@ router.get('/my-sessions', authenticateToken, (req, res) => {
   if (role === 'tutee') {
     query = `
       SELECT s.*, 
+             s.tutee_id, s.tutor_id,
              tutor.name as tutor_name, tutor.college as tutor_college,
              r.title as reading_title, r.summary as reading_summary
       FROM sessions s
@@ -82,6 +83,7 @@ router.get('/my-sessions', authenticateToken, (req, res) => {
   } else {
     query = `
       SELECT s.*, 
+             s.tutee_id, s.tutor_id,
              tutee.name as tutee_name, tutee.tech_comfort_level,
              r.title as reading_title, r.summary as reading_summary
       FROM sessions s

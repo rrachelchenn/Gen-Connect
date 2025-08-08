@@ -34,17 +34,13 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
   const [saveStatus, setSaveStatus] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
-    if (sessionId) {
-      fetchExistingAnswers();
-    }
-  }, [sessionId]);
+    fetchExistingAnswers();
+  }, [readingId, tuteeId]);
 
   const fetchExistingAnswers = async () => {
-    if (!sessionId) return;
-    
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/discussions/session/${sessionId}/answers`);
+      const response = await axios.get(`${API_BASE_URL}/discussions/reading/${readingId}/tutee/${tuteeId}/answers`);
       const existingAnswers: { [key: number]: string } = {};
       
       response.data.forEach((answer: DiscussionAnswer) => {
@@ -54,6 +50,7 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
       setAnswers(existingAnswers);
     } catch (err: any) {
       console.error('Error fetching existing answers:', err);
+      // Don't show error for missing answers - just start with empty state
     } finally {
       setLoading(false);
     }
@@ -73,11 +70,6 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
   };
 
   const saveAnswer = async (questionIndex: number) => {
-    if (!sessionId) {
-      // For non-session viewing, just store locally
-      return;
-    }
-
     const answer = answers[questionIndex];
     if (!answer || answer.trim() === '') {
       setSaveStatus(prev => ({
@@ -90,11 +82,11 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
     try {
       setSaving(prev => ({ ...prev, [questionIndex]: true }));
       
-      await axios.post(`${API_BASE_URL}/discussions/session/${sessionId}/answers`, {
-        readingId,
-        questionIndex,
-        answer: answer.trim(),
-        tuteeId
+      // Save all answers using the new persistent API
+      const answersArray = questions.map((_, index) => answers[index] || '');
+      
+      await axios.post(`${API_BASE_URL}/discussions/reading/${readingId}/tutee/${tuteeId}/answers`, {
+        answers: answersArray
       });
       
       setSaveStatus(prev => ({
@@ -121,6 +113,38 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
     }
   };
 
+  const saveAllAnswers = async () => {
+    try {
+      setLoading(true);
+      
+      const answersArray = questions.map((_, index) => answers[index] || '');
+      
+      await axios.post(`${API_BASE_URL}/discussions/reading/${readingId}/tutee/${tuteeId}/answers`, {
+        answers: answersArray
+      });
+      
+      // Set save status for all questions
+      const allSaved: { [key: number]: string } = {};
+      questions.forEach((_, index) => {
+        if (answers[index]?.trim()) {
+          allSaved[index] = 'Saved!';
+        }
+      });
+      setSaveStatus(allSaved);
+
+      // Clear all save statuses after 2 seconds
+      setTimeout(() => {
+        setSaveStatus({});
+      }, 2000);
+
+    } catch (err: any) {
+      console.error('Error saving all answers:', err);
+      setSaveStatus({ 0: 'Failed to save. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleKeyPress = (questionIndex: number, e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       saveAnswer(questionIndex);
@@ -137,9 +161,7 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
       <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
         {readOnly 
           ? "Here are the tutee's responses to the discussion questions:"
-          : sessionId 
-            ? "Share your thoughts on these questions. Your tutor will be able to see your answers during the session."
-            : "Think about these questions as you read. You can prepare your thoughts for the session."
+          : "Share your thoughts on these questions. Your answers will be saved and visible to any tutor you book a session with."
         }
       </p>
 
@@ -173,7 +195,7 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
                 }}
               />
 
-              {!readOnly && sessionId && (
+              {!readOnly && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <button
                     onClick={() => saveAnswer(index)}
@@ -197,13 +219,7 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
                 </div>
               )}
 
-              {!readOnly && !sessionId && answers[index] && (
-                <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic' }}>
-                  Your answers will be saved when you book and start a session.
-                </p>
-              )}
-
-              {!readOnly && sessionId && (
+              {!readOnly && (
                 <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.5rem' }}>
                   Tip: Press Ctrl+Enter (Cmd+Enter on Mac) to save quickly
                 </p>
@@ -212,6 +228,18 @@ const DiscussionQuestions: React.FC<DiscussionQuestionsProps> = ({
           </div>
         ))}
       </div>
+
+      {!readOnly && questions.length > 0 && Object.values(answers).some(answer => answer?.trim()) && (
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <button
+            onClick={saveAllAnswers}
+            disabled={loading}
+            className="btn btn-primary btn-large"
+          >
+            {loading ? 'Saving All Answers...' : 'Save All Answers'}
+          </button>
+        </div>
+      )}
 
       {!readOnly && questions.length > 0 && (
         <div className="discussion-tips" style={{ 

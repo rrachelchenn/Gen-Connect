@@ -110,19 +110,18 @@ function initDatabase() {
       FOREIGN KEY (reviewer_id) REFERENCES users (id)
     )`);
 
-    // Discussion answers table
+    // Discussion answers table - linked to tutee+reading, not session
     db.run(`CREATE TABLE IF NOT EXISTS discussion_answers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      session_id INTEGER NOT NULL,
       reading_id INTEGER NOT NULL,
       tutee_id INTEGER NOT NULL,
       question_index INTEGER NOT NULL,
       answer TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (session_id) REFERENCES sessions (id),
       FOREIGN KEY (reading_id) REFERENCES readings (id),
-      FOREIGN KEY (tutee_id) REFERENCES users (id)
+      FOREIGN KEY (tutee_id) REFERENCES users (id),
+      UNIQUE(tutee_id, reading_id, question_index)
     )`);
 
     // Session notes table

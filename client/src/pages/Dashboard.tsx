@@ -18,6 +18,8 @@ interface Session {
   tutor_college?: string;
   tutee_name?: string;
   tutee_tech_comfort_level?: string;
+  tutee_id?: number;
+  tutor_id?: number;
   zoom_meeting_id?: string;
   zoom_join_url?: string;
   zoom_start_url?: string;

@@ -5,6 +5,70 @@ const path = require('path');
 const router = express.Router();
 const dbPath = path.join(__dirname, '../database/genconnect.db');
 
+// Get discussion answers for a tutee and reading (new persistent approach)
+router.get('/reading/:readingId/tutee/:tuteeId/answers', (req, res) => {
+  const { readingId, tuteeId } = req.params;
+  const db = new sqlite3.Database(dbPath);
+  
+  db.all(
+    'SELECT * FROM discussion_answers WHERE reading_id = ? AND tutee_id = ? ORDER BY question_index',
+    [readingId, tuteeId],
+    (err, answers) => {
+      db.close();
+      if (err) {
+        console.error('Error fetching discussion answers:', err);
+        return res.status(500).json({ error: 'Failed to fetch discussion answers' });
+      }
+      res.json(answers);
+    }
+  );
+});
+
+// Save discussion answers for a tutee and reading (new persistent approach)
+router.post('/reading/:readingId/tutee/:tuteeId/answers', (req, res) => {
+  const { readingId, tuteeId } = req.params;
+  const { answers } = req.body;
+  const db = new sqlite3.Database(dbPath);
+  
+  // Start transaction
+  db.serialize(() => {
+    answers.forEach((answer, index) => {
+      if (answer && answer.trim()) {
+        db.run(
+          `INSERT OR REPLACE INTO discussion_answers 
+           (reading_id, tutee_id, question_index, answer, updated_at) 
+           VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+          [readingId, tuteeId, index, answer.trim()],
+          (err) => {
+            if (err) {
+              console.error('Error saving answer:', err);
+            }
+          }
+        );
+      } else {
+        // Delete empty answers
+        db.run(
+          'DELETE FROM discussion_answers WHERE reading_id = ? AND tutee_id = ? AND question_index = ?',
+          [readingId, tuteeId, index],
+          (err) => {
+            if (err) {
+              console.error('Error deleting empty answer:', err);
+            }
+          }
+        );
+      }
+    });
+  });
+  
+  db.close((err) => {
+    if (err) {
+      console.error('Error closing database:', err);
+      return res.status(500).json({ error: 'Failed to save discussion answers' });
+    }
+    res.json({ success: true });
+  });
+});
+
 // Get discussion answers for a session
 router.get('/session/:sessionId/answers', (req, res) => {
   const { sessionId } = req.params;

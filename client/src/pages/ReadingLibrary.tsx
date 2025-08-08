@@ -83,6 +83,43 @@ const ReadingLibrary: React.FC = () => {
     return tags.split(',').map(tag => tag.trim());
   };
 
+  const renderMarkdownContent = (content: string) => {
+    // Simple markdown renderer for bold text and basic formatting
+    const lines = content.split('\n');
+    const elements: React.ReactElement[] = [];
+    
+    lines.forEach((line, index) => {
+      if (line.trim() === '') {
+        elements.push(<br key={`br-${index}`} />);
+      } else if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
+        // Bold headings
+        const text = line.slice(2, -2);
+        elements.push(
+          <h4 key={index} style={{ margin: '1.5rem 0 0.5rem 0', color: '#1e40af', fontSize: '1.1rem' }}>
+            {text}
+          </h4>
+        );
+      } else {
+        // Regular text with inline bold formatting
+        const parts = line.split(/(\*\*[^*]+\*\*)/);
+        const formattedParts = parts.map((part, partIndex) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={`${index}-${partIndex}`}>{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        });
+        
+        elements.push(
+          <p key={index} style={{ margin: '0.5rem 0', lineHeight: 1.6 }}>
+            {formattedParts}
+          </p>
+        );
+      }
+    });
+    
+    return elements;
+  };
+
   if (loading) {
     return <div className="loading">Loading reading library...</div>;
   }
@@ -197,8 +234,8 @@ const ReadingLibrary: React.FC = () => {
                     border: '1px solid #e5e7eb'
                   }}>
                     <h4 style={{ marginBottom: '1rem', color: '#1e40af' }}>Reading Content:</h4>
-                    <div style={{ lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '2rem', whiteSpace: 'pre-line' }}>
-                      {reading.content}
+                    <div style={{ fontSize: '1.05rem', marginBottom: '2rem' }}>
+                      {renderMarkdownContent(reading.content)}
                     </div>
 
                     {/* Discussion Questions */}
