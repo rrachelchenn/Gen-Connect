@@ -8,6 +8,7 @@ import SessionWorkspace from '../components/SessionWorkspace';
 
 interface Session {
   id: number;
+  reading_id: number;
   session_date: string;
   status: string;
   reading_title: string;
