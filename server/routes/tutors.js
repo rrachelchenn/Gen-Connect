@@ -1,14 +1,48 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { seedSampleTutors } = require('../database/seedTutors');
 
 const router = express.Router();
 const dbPath = path.join(__dirname, '../database/genconnect.db');
 
 // Get all tutors for browsing
-router.get('/browse', (req, res) => {
+router.get('/browse', async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   
+  // Check if tutor_profiles table exists, if not seed the data
+  db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='tutor_profiles'", async (err, row) => {
+    if (err) {
+      console.error('Error checking table:', err);
+      db.close();
+      return res.status(500).json({ error: 'Failed to fetch tutors' });
+    }
+    
+    // If table doesn't exist, seed the sample tutors
+    if (!row) {
+      console.log('Tutor profiles table missing, seeding sample tutors...');
+      db.close();
+      try {
+        await seedSampleTutors();
+        // Retry the query after seeding
+        return fetchTutors(res);
+      } catch (seedErr) {
+        console.error('Error seeding tutors:', seedErr);
+        return res.status(500).json({ error: 'Failed to initialize tutors' });
+      }
+    } else {
+      // Table exists, proceed with query
+      fetchTutorsFromDB(db, res);
+    }
+  });
+});
+
+function fetchTutors(res) {
+  const db = new sqlite3.Database(dbPath);
+  fetchTutorsFromDB(db, res);
+}
+
+function fetchTutorsFromDB(db, res) {
   const query = `
     SELECT 
       u.*,
@@ -43,7 +77,7 @@ router.get('/browse', (req, res) => {
     
     res.json(formattedTutors);
   });
-});
+}
 
 // Get tutor reviews
 router.get('/:tutorId/reviews', (req, res) => {
