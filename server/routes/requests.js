@@ -2,7 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { authenticateToken } = require('./auth');
-const { createGoogleMeetForSession } = require('../utils/googleMeet');
+const { createCalendarEventWithMeet } = require('../utils/googleCalendar');
 
 const router = express.Router();
 const dbPath = path.join(__dirname, '../database/genconnect.db');
@@ -100,8 +100,12 @@ router.post('/:id/accept', authenticateToken, (req, res) => {
           }
           
           try {
-            // Create Google Meet for session
-            const googleMeet = createGoogleMeetForSession(session);
+            // Create Google Calendar event with Google Meet
+            const calendarResult = await createCalendarEventWithMeet(
+              session, 
+              session.tutor_email, 
+              session.tutee_email
+            );
             
             // Update session with Google Meet details
             const updateQuery = `
@@ -111,22 +115,20 @@ router.post('/:id/accept', authenticateToken, (req, res) => {
             `;
             
             db.run(updateQuery, [
-              googleMeet.meeting_id,
-              googleMeet.meet_url,
-              googleMeet.meet_url, // Same URL for both join and start
+              calendarResult.meeting_id,
+              calendarResult.meet_url,
+              calendarResult.meet_url, // Same URL for both join and start
               id
             ], async function(err) {
               if (err) {
                 console.error('Failed to update session with Google Meet details:', err);
               }
               
-              // Send calendar invites
-              await sendCalendarInvites(session, googleMeet);
-              
               db.close();
               res.json({ 
-                message: 'Request accepted successfully. Google Meet created and calendar invites sent.',
-                meeting: googleMeet
+                message: 'Request accepted successfully. Google Calendar event created with Google Meet and invites sent.',
+                meeting: calendarResult,
+                calendar_event: calendarResult.calendar_event
               });
             });
           } catch (error) {
@@ -213,61 +215,6 @@ router.get('/stats', authenticateToken, (req, res) => {
 
 
 // Send calendar invites to both participants
-async function sendCalendarInvites(session, zoomMeeting) {
-  const sessionDate = new Date(session.session_date);
-  
-  // Send email to tutee
-  const tuteeMailOptions = {
-    from: process.env.EMAIL_USER || 'noreply@genconnect.com',
-    to: session.tutee_email,
-    subject: `Session Scheduled: ${session.reading_title}`,
-    html: `
-      <h2>Your GenConnect session has been scheduled!</h2>
-      <p><strong>Tutor:</strong> ${session.tutor_name}</p>
-      <p><strong>Reading:</strong> ${session.reading_title}</p>
-      <p><strong>Date & Time:</strong> ${sessionDate.toLocaleString()}</p>
-      <p><strong>Duration:</strong> ${session.duration_minutes} minutes</p>
-      <br>
-      <p><strong>Join Zoom Meeting:</strong></p>
-      <p><a href="${zoomMeeting.join_url}">${zoomMeeting.join_url}</a></p>
-      <p><strong>Meeting ID:</strong> ${zoomMeeting.id}</p>
-      <p><strong>Password:</strong> ${zoomMeeting.password}</p>
-      <br>
-      <p><strong>Demo Mode:</strong> You can join the session anytime for testing.</p>
-      <p>See you there!</p>
-    `
-  };
-
-  // Send email to tutor
-  const tutorMailOptions = {
-    from: process.env.EMAIL_USER || 'noreply@genconnect.com',
-    to: session.tutor_email,
-    subject: `Session Scheduled: ${session.reading_title}`,
-    html: `
-      <h2>Your GenConnect session has been scheduled!</h2>
-      <p><strong>Student:</strong> ${session.tutee_name}</p>
-      <p><strong>Reading:</strong> ${session.reading_title}</p>
-      <p><strong>Date & Time:</strong> ${sessionDate.toLocaleString()}</p>
-      <p><strong>Duration:</strong> ${session.duration_minutes} minutes</p>
-      <br>
-      <p><strong>Start Zoom Meeting (Host):</strong></p>
-      <p><a href="${zoomMeeting.start_url}">${zoomMeeting.start_url}</a></p>
-      <p><strong>Meeting ID:</strong> ${zoomMeeting.id}</p>
-      <p><strong>Password:</strong> ${zoomMeeting.password}</p>
-      <br>
-      <p><strong>Demo Mode:</strong> You can start the meeting anytime for testing.</p>
-      <p>Good luck with your session!</p>
-    `
-  };
-
-  try {
-    // For now, just log the emails (since we don't have email credentials set up)
-    console.log('Would send email to tutee:', tuteeMailOptions);
-    console.log('Would send email to tutor:', tutorMailOptions);
-    console.log('Calendar invites would be sent successfully');
-  } catch (error) {
-    console.error('Error sending calendar invites:', error);
-  }
-}
+// Calendar invites are now handled by googleCalendar.js utility
 
 module.exports = router;
