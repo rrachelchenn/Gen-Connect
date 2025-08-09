@@ -86,11 +86,20 @@ const AvailabilityManager: React.FC = () => {
 
   const handleDeleteSlot = async (slotId: number) => {
     try {
-      await axios.delete(`/api/availability/${slotId}`);
-      setSuccess('Availability slot deleted successfully');
+      const response = await axios.delete(`/api/availability/${slotId}`);
+      
+      if (response.data.demo_mode) {
+        setSuccess(`${response.data.message} (Demo mode)`);
+      } else {
+        setSuccess('Availability slot deleted successfully');
+      }
+      
+      // Always refresh to get updated data
       fetchAvailability();
-    } catch (error) {
-      setError('Failed to delete availability slot');
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to delete availability slot';
+      setError(errorMessage);
     }
   };
 
