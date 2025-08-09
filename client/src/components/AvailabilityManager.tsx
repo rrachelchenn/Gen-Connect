@@ -5,11 +5,12 @@ import './AvailabilityManager.css';
 
 interface TimeSlot {
   id: number;
-  date: string; // YYYY-MM-DD format
+  date?: string; // YYYY-MM-DD format (new system)
+  day_of_week?: number; // Legacy system (0-6)
   start_time: string;
   end_time: string;
   topics: string;
-  is_recurring: boolean;
+  is_recurring?: boolean;
   recurring_pattern?: 'weekly' | 'biweekly' | 'monthly';
   recurring_end_date?: string;
 }
@@ -22,6 +23,7 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
 const AvailabilityManager: React.FC = () => {
   const { user } = useAuth();
   const [availabilitySlots, setAvailabilitySlots] = useState<TimeSlot[]>([]);
+  const [deletedSlotIds, setDeletedSlotIds] = useState<Set<number>>(new Set()); // Track deleted slots
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     // Default to tomorrow
     const tomorrow = new Date();
@@ -79,6 +81,8 @@ const AvailabilityManager: React.FC = () => {
       );
       fetchAvailability();
       setTopics('');
+      // Clear deleted slots list when adding new ones
+      setDeletedSlotIds(new Set());
     } catch (error: any) {
       setError(error.response?.data?.error || 'Failed to add availability slot');
     }
@@ -89,13 +93,14 @@ const AvailabilityManager: React.FC = () => {
       const response = await axios.delete(`/api/availability/${slotId}`);
       
       if (response.data.demo_mode) {
-        setSuccess(`${response.data.message} (Demo mode)`);
+        setSuccess(`${response.data.message} (Demo mode - slot hidden until database refresh)`);
+        // In demo mode, hide the slot client-side since we can't actually delete it
+        setDeletedSlotIds(prev => new Set([...prev, slotId]));
       } else {
         setSuccess('Availability slot deleted successfully');
+        // Always refresh to get updated data
+        fetchAvailability();
       }
-      
-      // Always refresh to get updated data
-      fetchAvailability();
     } catch (error: any) {
       console.error('Delete error:', error);
       const errorMessage = error.response?.data?.error || 'Failed to delete availability slot';
@@ -106,20 +111,38 @@ const AvailabilityManager: React.FC = () => {
   const groupSlotsByDate = () => {
     const grouped: { [key: string]: TimeSlot[] } = {};
     
-    // Sort slots by date
-    const sortedSlots = [...availabilitySlots].sort((a, b) => a.date.localeCompare(b.date));
+    // Filter out deleted slots and sort by date
+    const filteredSlots = availabilitySlots.filter(slot => !deletedSlotIds.has(slot.id));
+    const sortedSlots = [...filteredSlots].sort((a, b) => {
+      // Handle both date-based and legacy day_of_week based slots
+      if (a.date && b.date) {
+        return a.date.localeCompare(b.date);
+      }
+      // For legacy slots without dates, sort by day_of_week
+      return 0;
+    });
     
     sortedSlots.forEach(slot => {
-      if (!grouped[slot.date]) {
-        grouped[slot.date] = [];
+      // Use date if available, otherwise create a key for legacy slots
+      const key = slot.date || `legacy-${slot.day_of_week || 'unknown'}`;
+      if (!grouped[key]) {
+        grouped[key] = [];
       }
-      grouped[slot.date].push(slot);
+      grouped[key].push(slot);
     });
     
     return grouped;
   };
 
   const formatDate = (dateString: string) => {
+    // Handle legacy slots
+    if (dateString.startsWith('legacy-')) {
+      const dayOfWeek = dateString.replace('legacy-', '');
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return `${days[parseInt(dayOfWeek)] || 'Unknown Day'} (Legacy Schedule)`;
+    }
+    
+    // Handle date-based slots
     const date = new Date(dateString + 'T00:00:00');
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
