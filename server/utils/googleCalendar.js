@@ -109,11 +109,15 @@ async function sendCalendarInviteEmails(calendarEvent, meetUrl, tutorEmail, tute
       throw new Error('Email credentials not configured');
     }
 
+    console.log('📧 Email credentials found, attempting to send emails...');
+    console.log(`   User: ${emailUser}`);
+    console.log(`   Pass length: ${emailPass.length} characters`);
+
     const transporter = nodemailer.createTransporter({
       service: 'gmail',
       auth: {
         user: emailUser,
-        pass: emailPass // Gmail App Password needed
+        pass: emailPass.replace(/\s/g, '') // Remove any spaces from app password
       }
     });
 
