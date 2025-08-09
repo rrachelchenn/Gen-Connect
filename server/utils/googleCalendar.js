@@ -99,72 +99,119 @@ Please join the Google Meet at the scheduled time. The session workspace will al
 }
 
 async function sendCalendarInviteEmails(calendarEvent, meetUrl, tutorEmail, tuteeEmail) {
-  // Create email transporter (for demo, we'll just log the emails)
-  console.log('\n📧 Calendar Invite Email Content:');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  
-  const emailContent = {
-    subject: calendarEvent.summary,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">
-          📚 GenConnect Session Invitation
-        </h2>
-        
-        <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #1e40af; margin-top: 0;">Session Details</h3>
-          <p><strong>📖 Topic:</strong> ${calendarEvent.summary.replace('GenConnect Session: ', '')}</p>
-          <p><strong>📅 Date & Time:</strong> ${new Date(calendarEvent.start.dateTime).toLocaleString()}</p>
-          <p><strong>⏱️ Duration:</strong> ${Math.round((new Date(calendarEvent.end.dateTime) - new Date(calendarEvent.start.dateTime)) / 60000)} minutes</p>
+  try {
+    // Create email transporter using Gmail (if credentials available)
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    
+    if (!emailUser || !emailPass) {
+      console.log('📧 No email credentials provided - calendar invite content logged instead');
+      throw new Error('Email credentials not configured');
+    }
+
+    const transporter = nodemailer.createTransporter({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass // Gmail App Password needed
+      }
+    });
+
+    const emailContent = {
+      subject: `📚 ${calendarEvent.summary} - Calendar Invite`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">
+            📚 GenConnect Session Invitation
+          </h2>
+          
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1e40af; margin-top: 0;">Session Details</h3>
+            <p><strong>📖 Topic:</strong> ${calendarEvent.summary.replace('GenConnect Session: ', '')}</p>
+            <p><strong>📅 Date & Time:</strong> ${new Date(calendarEvent.start.dateTime).toLocaleString()}</p>
+            <p><strong>⏱️ Duration:</strong> ${Math.round((new Date(calendarEvent.end.dateTime) - new Date(calendarEvent.start.dateTime)) / 60000)} minutes</p>
+          </div>
+
+          <div style="background-color: #dcfce7; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+            <h3 style="color: #16a34a; margin-top: 0;">🎥 Join the Session</h3>
+            <a href="${meetUrl}" 
+               style="display: inline-block; background-color: #4285f4; color: white; padding: 12px 24px; 
+                      text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0;">
+              Join Google Meet
+            </a>
+            <p style="font-size: 14px; color: #6b7280; margin-top: 15px;">
+              You can join this meeting from any device with a web browser. No downloads required!
+            </p>
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">
+              <strong>Meet Link:</strong> ${meetUrl}
+            </p>
+          </div>
+
+          <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #d97706; margin-top: 0;">📝 Session Workspace</h3>
+            <p>In addition to the video call, you'll have access to the session workspace on GenConnect.live where you can:</p>
+            <ul style="color: #374151;">
+              <li>View the reading material with proper formatting</li>
+              <li>See discussion questions and answers</li>
+              <li>Take collaborative notes during the session</li>
+            </ul>
+            <p style="font-size: 14px; color: #6b7280;">
+              Visit your dashboard on GenConnect.live and click "📚 Open Session Workspace" when it's time for your session.
+            </p>
+          </div>
+
+          <div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #dc2626; margin-top: 0;">⚠️ Important Notes</h3>
+            <p style="color: #374151; margin-bottom: 10px;">This is a <strong>demo calendar invite</strong> for testing purposes:</p>
+            <ul style="color: #374151;">
+              <li>The Google Meet link may not be a real active meeting room</li>
+              <li>This demonstrates the calendar invite email functionality</li>
+              <li>In production, this would create actual Google Calendar events</li>
+            </ul>
+          </div>
+
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; font-size: 14px; color: #6b7280;">
+            <p><strong>Need help?</strong> Contact us through the GenConnect platform if you have any questions.</p>
+            <p>This invitation was sent by GenConnect - Bridging the Digital Divide</p>
+          </div>
         </div>
+      `
+    };
 
-        <div style="background-color: #dcfce7; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-          <h3 style="color: #16a34a; margin-top: 0;">🎥 Join the Session</h3>
-          <a href="${meetUrl}" 
-             style="display: inline-block; background-color: #4285f4; color: white; padding: 12px 24px; 
-                    text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0;">
-            Join Google Meet
-          </a>
-          <p style="font-size: 14px; color: #6b7280; margin-top: 15px;">
-            You can join this meeting from any device with a web browser. No downloads required!
-          </p>
-        </div>
+    console.log('\n📧 Sending calendar invite emails...');
+    console.log(`   To: ${tutorEmail}, ${tuteeEmail}`);
+    console.log(`   Subject: ${emailContent.subject}`);
+    console.log(`   Google Meet: ${meetUrl}`);
 
-        <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #d97706; margin-top: 0;">📝 Session Workspace</h3>
-          <p>In addition to the video call, you'll have access to the session workspace on GenConnect.live where you can:</p>
-          <ul style="color: #374151;">
-            <li>View the reading material with proper formatting</li>
-            <li>See discussion questions and answers</li>
-            <li>Take collaborative notes during the session</li>
-          </ul>
-          <p style="font-size: 14px; color: #6b7280;">
-            Visit your dashboard on GenConnect.live and click "📚 Open Session Workspace" when it's time for your session.
-          </p>
-        </div>
+    // Send email to both participants
+    const emailPromises = [tutorEmail, tuteeEmail].map(email => 
+      transporter.sendMail({
+        from: `"GenConnect" <${process.env.EMAIL_USER || 'genconnect.demo@gmail.com'}>`,
+        to: email,
+        subject: emailContent.subject,
+        html: emailContent.html
+      })
+    );
 
-        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; font-size: 14px; color: #6b7280;">
-          <p><strong>Need help?</strong> Contact us through the GenConnect platform if you have any questions.</p>
-          <p>This invitation was sent by GenConnect - Bridging the Digital Divide</p>
-        </div>
-      </div>
-    `
-  };
+    await Promise.all(emailPromises);
+    
+    console.log('✅ Calendar invite emails sent successfully!');
+    return true;
 
-  console.log(`To: ${tutorEmail}, ${tuteeEmail}`);
-  console.log(`Subject: ${emailContent.subject}`);
-  console.log(`Google Meet Link: ${meetUrl}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-
-  // In production, you would actually send these emails:
-  // await transporter.sendMail({
-  //   from: process.env.EMAIL_USER,
-  //   to: [tutorEmail, tuteeEmail],
-  //   subject: emailContent.subject,
-  //   html: emailContent.html
-  // });
-
-  return true;
+  } catch (error) {
+    console.error('❌ Error sending calendar invite emails:', error.message);
+    
+    // Log email content for testing even if sending fails
+    console.log('\n📧 Email content that would have been sent:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`To: ${tutorEmail}, ${tuteeEmail}`);
+    console.log(`Subject: 📚 ${calendarEvent.summary} - Calendar Invite`);
+    console.log(`Google Meet Link: ${meetUrl}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
+    // Don't throw error, just log it - we want the session acceptance to succeed
+    return false;
+  }
 }
 
 // Production setup would require:
