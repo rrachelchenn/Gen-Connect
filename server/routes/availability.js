@@ -19,15 +19,33 @@ router.get('/:tutorId', async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const { tutorId } = req.params;
 
+  // Try the new date-based schema first, fallback to old weekday schema
   db.all(
-    `SELECT * FROM tutor_availability WHERE tutor_id = ? ORDER BY day_of_week, start_time`,
+    `SELECT * FROM tutor_availability WHERE tutor_id = ? ORDER BY date, start_time`,
     [tutorId],
     (err, slots) => {
-      db.close();
-      if (err) {
-        return res.status(500).json({ error: 'Failed to fetch availability' });
+      if (err && err.message.includes('no such column: date')) {
+        // Fallback to old schema
+        db.all(
+          `SELECT *, NULL as date, day_of_week, 
+           NULL as is_recurring, NULL as recurring_pattern, NULL as recurring_end_date 
+           FROM tutor_availability WHERE tutor_id = ? ORDER BY day_of_week, start_time`,
+          [tutorId],
+          (fallbackErr, fallbackSlots) => {
+            db.close();
+            if (fallbackErr) {
+              return res.status(500).json({ error: 'Failed to fetch availability' });
+            }
+            res.json(fallbackSlots || []);
+          }
+        );
+      } else {
+        db.close();
+        if (err) {
+          return res.status(500).json({ error: 'Failed to fetch availability' });
+        }
+        res.json(slots);
       }
-      res.json(slots);
     }
   );
 });
@@ -35,7 +53,7 @@ router.get('/:tutorId', async (req, res) => {
 // Add new availability slot
 router.post('/', authenticateToken, isTutor, async (req, res) => {
   const db = new sqlite3.Database(dbPath);
-  const { day_of_week, start_time, end_time, topics } = req.body;
+  const { date, start_time, end_time, topics, is_recurring, recurring_pattern, recurring_end_date } = req.body;
   const tutorId = req.user.userId;
 
   // Validate time format and range
@@ -44,54 +62,125 @@ router.post('/', authenticateToken, isTutor, async (req, res) => {
     return res.status(400).json({ error: 'Invalid time format. Use HH:MM format' });
   }
 
-  // Validate day of week
-  if (day_of_week < 0 || day_of_week > 6) {
-    return res.status(400).json({ error: 'Day of week must be between 0 (Sunday) and 6 (Saturday)' });
+  // Validate date format
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(date)) {
+    return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD format' });
   }
 
-  // Check for overlapping slots
-  db.get(
-    `SELECT * FROM tutor_availability 
-     WHERE tutor_id = ? AND day_of_week = ? 
-     AND ((start_time <= ? AND end_time > ?) OR (start_time < ? AND end_time >= ?))`,
-    [tutorId, day_of_week, start_time, start_time, end_time, end_time],
-    (err, overlap) => {
-      if (err) {
-        db.close();
-        return res.status(500).json({ error: 'Failed to check for overlapping slots' });
+  // Validate that date is not in the past
+  const selectedDate = new Date(date + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selectedDate < today) {
+    return res.status(400).json({ error: 'Cannot set availability for past dates' });
+  }
+
+  // Generate dates to insert (single date or recurring dates)
+  const datesToInsert = [];
+  
+  if (is_recurring && recurring_pattern && recurring_end_date) {
+    let currentDate = new Date(date + 'T00:00:00');
+    const endDate = new Date(recurring_end_date + 'T00:00:00');
+    
+    while (currentDate <= endDate) {
+      datesToInsert.push(currentDate.toISOString().split('T')[0]);
+      
+      // Add the appropriate interval
+      switch (recurring_pattern) {
+        case 'weekly':
+          currentDate.setDate(currentDate.getDate() + 7);
+          break;
+        case 'biweekly':
+          currentDate.setDate(currentDate.getDate() + 14);
+          break;
+        case 'monthly':
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          break;
       }
-
-      if (overlap) {
-        db.close();
-        return res.status(400).json({ error: 'Time slot overlaps with existing availability' });
-      }
-
-      // Insert new availability slot
-      db.run(
-        `INSERT INTO tutor_availability (tutor_id, day_of_week, start_time, end_time, topics) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [tutorId, day_of_week, start_time, end_time, topics],
-        function(err) {
-          if (err) {
-            db.close();
-            return res.status(500).json({ error: 'Failed to add availability' });
-          }
-
-          db.get(
-            'SELECT * FROM tutor_availability WHERE id = ?',
-            [this.lastID],
-            (err, slot) => {
-              db.close();
-              if (err) {
-                return res.status(500).json({ error: 'Failed to fetch created availability' });
-              }
-              res.status(201).json(slot);
-            }
-          );
-        }
-      );
     }
-  );
+  } else {
+    datesToInsert.push(date);
+  }
+
+  console.log(`Creating availability slots for dates: ${datesToInsert.join(', ')}`);
+
+  // Check for overlapping slots on each date
+  const checkOverlaps = async () => {
+    for (const checkDate of datesToInsert) {
+      const overlap = await new Promise((resolve, reject) => {
+        db.get(
+          `SELECT * FROM tutor_availability 
+           WHERE tutor_id = ? AND date = ? 
+           AND ((start_time <= ? AND end_time > ?) OR (start_time < ? AND end_time >= ?))`,
+          [tutorId, checkDate, start_time, start_time, end_time, end_time],
+          (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          }
+        );
+      });
+      
+      if (overlap) {
+        throw new Error(`Time slot overlaps with existing availability on ${checkDate}`);
+      }
+    }
+  };
+
+  try {
+    await checkOverlaps();
+    
+    // Insert all slots
+    let insertedCount = 0;
+    const insertPromises = datesToInsert.map(insertDate => {
+      return new Promise((resolve, reject) => {
+        db.run(
+          `INSERT INTO tutor_availability (tutor_id, date, start_time, end_time, topics, is_recurring, recurring_pattern, recurring_end_date) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [tutorId, insertDate, start_time, end_time, topics, is_recurring ? 1 : 0, recurring_pattern, recurring_end_date],
+          function(err) {
+            if (err) reject(err);
+            else {
+              insertedCount++;
+              resolve(this.lastID);
+            }
+          }
+        );
+      });
+    });
+
+    const insertedIds = await Promise.all(insertPromises);
+    
+    // Fetch the created slots
+    db.all(
+      `SELECT * FROM tutor_availability WHERE id IN (${insertedIds.map(() => '?').join(',')})`,
+      insertedIds,
+      (err, slots) => {
+        db.close();
+        if (err) {
+          return res.status(500).json({ error: 'Failed to fetch created availability slots' });
+        }
+        res.status(201).json({
+          message: `${insertedCount} availability slot(s) created successfully`,
+          slots: slots
+        });
+      }
+    );
+
+  } catch (error) {
+    db.close();
+    if (error.message.includes('overlaps')) {
+      return res.status(400).json({ error: error.message });
+    } else if (error.message.includes('no such column: date')) {
+      // Fallback to old schema for demo purposes
+      return res.status(400).json({ 
+        error: 'Database schema needs updating for date-based availability. Please contact administrator.' 
+      });
+    } else {
+      console.error('Error creating availability:', error);
+      return res.status(500).json({ error: 'Failed to add availability slots' });
+    }
+  }
 });
 
 // Update availability slot

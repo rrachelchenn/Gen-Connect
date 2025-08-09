@@ -5,21 +5,14 @@ import './AvailabilityManager.css';
 
 interface TimeSlot {
   id: number;
-  day_of_week: number;
+  date: string; // YYYY-MM-DD format
   start_time: string;
   end_time: string;
   topics: string;
+  is_recurring: boolean;
+  recurring_pattern?: 'weekly' | 'biweekly' | 'monthly';
+  recurring_end_date?: string;
 }
-
-const DAYS_OF_WEEK = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday'
-];
 
 const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
   const hour = i.toString().padStart(2, '0');
@@ -29,10 +22,23 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
 const AvailabilityManager: React.FC = () => {
   const { user } = useAuth();
   const [availabilitySlots, setAvailabilitySlots] = useState<TimeSlot[]>([]);
-  const [selectedDay, setSelectedDay] = useState<number>(1); // Monday by default
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  });
   const [startTime, setStartTime] = useState<string>('09:00');
   const [endTime, setEndTime] = useState<string>('10:00');
   const [topics, setTopics] = useState<string>('');
+  const [isRecurring, setIsRecurring] = useState<boolean>(false);
+  const [recurringPattern, setRecurringPattern] = useState<'weekly' | 'biweekly' | 'monthly'>('weekly');
+  const [recurringEndDate, setRecurringEndDate] = useState<string>(() => {
+    // Default to 3 months from now
+    const threeMonthsLater = new Date();
+    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+    return threeMonthsLater.toISOString().split('T')[0];
+  });
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
 
@@ -58,13 +64,19 @@ const AvailabilityManager: React.FC = () => {
 
     try {
       await axios.post('/api/availability', {
-        day_of_week: selectedDay,
+        date: selectedDate,
         start_time: startTime,
         end_time: endTime,
-        topics
+        topics,
+        is_recurring: isRecurring,
+        recurring_pattern: isRecurring ? recurringPattern : undefined,
+        recurring_end_date: isRecurring ? recurringEndDate : undefined
       });
 
-      setSuccess('Availability slot added successfully');
+      setSuccess(isRecurring ? 
+        `Recurring availability slots added successfully (${recurringPattern} until ${recurringEndDate})` :
+        'Availability slot added successfully'
+      );
       fetchAvailability();
       setTopics('');
     } catch (error: any) {
@@ -82,12 +94,35 @@ const AvailabilityManager: React.FC = () => {
     }
   };
 
-  const groupSlotsByDay = () => {
-    const grouped: { [key: number]: TimeSlot[] } = {};
-    DAYS_OF_WEEK.forEach((_, index) => {
-      grouped[index] = availabilitySlots.filter(slot => slot.day_of_week === index);
+  const groupSlotsByDate = () => {
+    const grouped: { [key: string]: TimeSlot[] } = {};
+    
+    // Sort slots by date
+    const sortedSlots = [...availabilitySlots].sort((a, b) => a.date.localeCompare(b.date));
+    
+    sortedSlots.forEach(slot => {
+      if (!grouped[slot.date]) {
+        grouped[slot.date] = [];
+      }
+      grouped[slot.date].push(slot);
     });
+    
     return grouped;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const getMinDate = () => {
+    // Minimum date is today
+    return new Date().toISOString().split('T')[0];
   };
 
   return (
@@ -99,16 +134,15 @@ const AvailabilityManager: React.FC = () => {
 
       <form onSubmit={handleAddSlot} className="add-slot-form">
         <div className="form-group">
-          <label htmlFor="day">Day:</label>
-          <select
-            id="day"
-            value={selectedDay}
-            onChange={(e) => setSelectedDay(parseInt(e.target.value))}
-          >
-            {DAYS_OF_WEEK.map((day, index) => (
-              <option key={day} value={index}>{day}</option>
-            ))}
-          </select>
+          <label htmlFor="date">Date:</label>
+          <input
+            type="date"
+            id="date"
+            value={selectedDate}
+            min={getMinDate()}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            required
+          />
         </div>
 
         <div className="form-group">
@@ -148,24 +182,70 @@ const AvailabilityManager: React.FC = () => {
           />
         </div>
 
+        <div className="form-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+            />
+            Make this recurring
+          </label>
+        </div>
+
+        {isRecurring && (
+          <>
+            <div className="form-group">
+              <label htmlFor="recurringPattern">Repeat every:</label>
+              <select
+                id="recurringPattern"
+                value={recurringPattern}
+                onChange={(e) => setRecurringPattern(e.target.value as 'weekly' | 'biweekly' | 'monthly')}
+              >
+                <option value="weekly">Week</option>
+                <option value="biweekly">2 Weeks</option>
+                <option value="monthly">Month</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="recurringEndDate">End recurring on:</label>
+              <input
+                type="date"
+                id="recurringEndDate"
+                value={recurringEndDate}
+                min={selectedDate}
+                onChange={(e) => setRecurringEndDate(e.target.value)}
+                required
+              />
+            </div>
+          </>
+        )}
+
         <button type="submit" className="add-slot-button">
-          Add Availability Slot
+          {isRecurring ? 'Add Recurring Slots' : 'Add Availability Slot'}
         </button>
       </form>
 
       <div className="availability-schedule">
         <h3>Your Current Availability</h3>
-        {Object.entries(groupSlotsByDay()).map(([day, slots]) => (
-          <div key={day} className="day-schedule">
-            <h4>{DAYS_OF_WEEK[parseInt(day)]}</h4>
-            {slots.length === 0 ? (
-              <p>No availability set</p>
-            ) : (
+        {Object.keys(groupSlotsByDate()).length === 0 ? (
+          <p>No availability slots set. Add your first availability slot above.</p>
+        ) : (
+          Object.entries(groupSlotsByDate()).map(([date, slots]) => (
+            <div key={date} className="date-schedule">
+              <h4>{formatDate(date)}</h4>
               <ul>
                 {slots.map(slot => (
                   <li key={slot.id} className="time-slot">
-                    <span>{slot.start_time} - {slot.end_time}</span>
+                    <span className="time-range">{slot.start_time} - {slot.end_time}</span>
                     {slot.topics && <span className="topics">Topics: {slot.topics}</span>}
+                    {slot.is_recurring && (
+                      <span className="recurring-info">
+                        🔄 Recurring {slot.recurring_pattern}
+                        {slot.recurring_end_date && ` until ${formatDate(slot.recurring_end_date)}`}
+                      </span>
+                    )}
                     <button
                       onClick={() => handleDeleteSlot(slot.id)}
                       className="delete-slot-button"
@@ -175,9 +255,9 @@ const AvailabilityManager: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
-        ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

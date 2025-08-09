@@ -39,13 +39,18 @@ router.get('/pending', authenticateToken, (req, res) => {
         const now = new Date();
         const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
         
+        // Use tomorrow at 2 PM for demo request
+        const demoSessionDate = new Date();
+        demoSessionDate.setDate(demoSessionDate.getDate() + 1);
+        demoSessionDate.setHours(14, 0, 0, 0);
+        
         const demoRequests = [
           {
             id: 610, // Match the demo session ID we created
             tutee_id: 1,
             tutor_id: 2,
             reading_id: 1,
-            session_date: "2025-01-09T20:00:00.000Z",
+            session_date: demoSessionDate.toISOString(),
             duration_minutes: 20,
             status: 'pending',
             tutee_name: 'Betty Johnson',
@@ -77,13 +82,18 @@ router.get('/pending', authenticateToken, (req, res) => {
       console.log('No pending requests found for Alex Chen, returning demo request');
       const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
       
+      // Use tomorrow at 2 PM for demo request
+      const demoSessionDate = new Date();
+      demoSessionDate.setDate(demoSessionDate.getDate() + 1);
+      demoSessionDate.setHours(14, 0, 0, 0);
+      
       const demoRequests = [
         {
           id: 610, // Match the demo session ID we created
           tutee_id: 1,
           tutor_id: 2,
           reading_id: 1,
-          session_date: "2025-01-09T20:00:00.000Z",
+          session_date: demoSessionDate.toISOString(),
           duration_minutes: 20,
           status: 'pending',
           tutee_name: 'Betty Johnson',
@@ -135,7 +145,7 @@ router.post('/:id/accept', authenticateToken, (req, res) => {
             tutor_name: 'Alex Chen', 
             tutor_email: 'rachel_chen@berkeley.edu',
             reading_title: 'Online Grocery Shopping Basics',
-            session_date: '2025-01-09T20:00:00.000Z',
+            session_date: demoDate.toISOString(),
             duration_minutes: 20
           };
           
@@ -183,7 +193,7 @@ router.post('/:id/accept', authenticateToken, (req, res) => {
             tutor_name: 'Alex Chen', 
             tutor_email: 'rachel_chen@berkeley.edu',
             reading_title: 'Online Grocery Shopping Basics',
-            session_date: '2025-01-09T20:00:00.000Z',
+            session_date: demoDate.toISOString(),
             duration_minutes: 20
           };
           

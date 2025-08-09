@@ -36,13 +36,17 @@ router.post('/book', authenticateToken, (req, res) => {
       console.log('Database is read-only, using demo mode for session booking');
       db.close();
       
-      // Return a mock successful response for demo purposes
+      // Return a mock successful response for demo purposes with a reasonable date
+      const demoDate = new Date();
+      demoDate.setDate(demoDate.getDate() + 1); // Tomorrow
+      demoDate.setHours(14, 0, 0, 0); // 2:00 PM
+      
       const mockSession = {
         id: Math.floor(Math.random() * 1000) + 100, // Random ID for demo
         tutee_id: tuteeId,
         tutor_id: tutorId,
         reading_id: readingId,
-        session_date: sessionDate,
+        session_date: demoDate.toISOString(),
         duration_minutes: durationMinutes,
         status: 'pending',
         tutee_name: req.user.name,
