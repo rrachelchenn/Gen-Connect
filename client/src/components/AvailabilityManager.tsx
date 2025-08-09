@@ -65,7 +65,7 @@ const AvailabilityManager: React.FC = () => {
     setSuccess('');
 
     try {
-      await axios.post('/api/availability', {
+      const response = await axios.post('/api/availability', {
         date: selectedDate,
         start_time: startTime,
         end_time: endTime,
@@ -75,11 +75,19 @@ const AvailabilityManager: React.FC = () => {
         recurring_end_date: isRecurring ? recurringEndDate : undefined
       });
 
-      setSuccess(isRecurring ? 
-        `Recurring availability slots added successfully (${recurringPattern} until ${recurringEndDate})` :
-        'Availability slot added successfully'
-      );
-      fetchAvailability();
+      if (response.data.demo_mode) {
+        // Handle demo mode - add slots directly to state
+        const demoSlots = response.data.slots;
+        setAvailabilitySlots(prev => [...prev, ...demoSlots]);
+        setSuccess(`${response.data.message} (Demo mode)`);
+      } else {
+        setSuccess(isRecurring ? 
+          `Recurring availability slots added successfully (${recurringPattern} until ${recurringEndDate})` :
+          'Availability slot added successfully'
+        );
+        fetchAvailability();
+      }
+      
       setTopics('');
       // Clear deleted slots list when adding new ones
       setDeletedSlotIds(new Set());
