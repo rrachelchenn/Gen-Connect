@@ -33,18 +33,17 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Tutor availability table (updated for date-based scheduling)
+    // Tutor availability table (date-based scheduling only)
     db.run(`CREATE TABLE IF NOT EXISTS tutor_availability (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tutor_id INTEGER,
-      day_of_week INTEGER, -- Legacy column for backwards compatibility
-      date TEXT, -- New: specific date (YYYY-MM-DD format)
-      start_time TEXT,
-      end_time TEXT,
+      date TEXT NOT NULL, -- Specific date (YYYY-MM-DD format)
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
       topics TEXT,
-      is_recurring BOOLEAN DEFAULT 0, -- New: whether this is a recurring slot
-      recurring_pattern TEXT, -- New: 'weekly', 'biweekly', 'monthly'
-      recurring_end_date TEXT, -- New: when recurring pattern ends (YYYY-MM-DD)
+      is_recurring BOOLEAN DEFAULT 0, -- Whether this is a recurring slot
+      recurring_pattern TEXT, -- 'weekly', 'biweekly', 'monthly'
+      recurring_end_date TEXT, -- When recurring pattern ends (YYYY-MM-DD)
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tutor_id) REFERENCES users (id)
     )`);
@@ -169,3 +168,10 @@ function initDatabase() {
 }
 
 module.exports = { initDatabase };
+
+// Run initialization if this file is called directly
+if (require.main === module) {
+  console.log('🚀 Initializing database...');
+  initDatabase();
+  console.log('✅ Database initialization complete!');
+}

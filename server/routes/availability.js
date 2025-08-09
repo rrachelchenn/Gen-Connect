@@ -14,48 +14,28 @@ const isTutor = (req, res, next) => {
   next();
 };
 
-// Get tutor's availability
+// Get tutor's availability (date-based only)
 router.get('/:tutorId', async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const { tutorId } = req.params;
 
-  // Try the new date-based schema first, fallback to old weekday schema
+  // Only fetch date-based slots (ignore any legacy slots)
   db.all(
-    `SELECT * FROM tutor_availability WHERE tutor_id = ? ORDER BY date, start_time`,
+    `SELECT * FROM tutor_availability 
+     WHERE tutor_id = ? AND date IS NOT NULL AND date != ''
+     ORDER BY date, start_time`,
     [tutorId],
     (err, slots) => {
-      if (err && err.message.includes('no such column: date')) {
-        // Fallback to old schema only
-        db.all(
-          `SELECT *, NULL as date, day_of_week, 
-           NULL as is_recurring, NULL as recurring_pattern, NULL as recurring_end_date 
-           FROM tutor_availability WHERE tutor_id = ? ORDER BY day_of_week, start_time`,
-          [tutorId],
-          (fallbackErr, fallbackSlots) => {
-            db.close();
-            if (fallbackErr) {
-              return res.status(500).json({ error: 'Failed to fetch availability' });
-            }
-            res.json(fallbackSlots || []);
-          }
-        );
-      } else if (err) {
-        db.close();
-        return res.status(500).json({ error: 'Failed to fetch availability' });
-      } else {
-        // Successfully got results with new schema
-        // Filter to only show date-based slots (ignore legacy ones)
-        const dateBasedSlots = slots.filter(slot => slot.date && slot.date !== null);
-        
-        // If no date-based slots exist but we're asking for tutor 2 (Alex Chen), 
-        // and database might be read-only, return empty array to hide legacy slots
-        if (dateBasedSlots.length === 0 && tutorId == 2) {
-          console.log('No date-based slots found for Alex Chen, returning empty array to hide legacy slots');
+      db.close();
+      if (err) {
+        console.error('Error fetching availability:', err.message);
+        // If database doesn't have date column, return empty array
+        if (err.message.includes('no such column: date')) {
+          return res.json([]);
         }
-        
-        db.close();
-        res.json(dateBasedSlots);
+        return res.status(500).json({ error: 'Failed to fetch availability' });
       }
+      res.json(slots || []);
     }
   );
 });
@@ -248,22 +228,23 @@ router.post('/', authenticateToken, isTutor, async (req, res) => {
   }
 });
 
-// Update availability slot
+// Update availability slot (date-based)
 router.put('/:slotId', authenticateToken, isTutor, async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const { slotId } = req.params;
-  const { day_of_week, start_time, end_time, topics } = req.body;
+  const { date, start_time, end_time, topics } = req.body;
   const tutorId = req.user.userId;
 
-  // Validate time format and range
+  // Validate time format
   const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
   if (!timeRegex.test(start_time) || !timeRegex.test(end_time)) {
     return res.status(400).json({ error: 'Invalid time format. Use HH:MM format' });
   }
 
-  // Validate day of week
-  if (day_of_week < 0 || day_of_week > 6) {
-    return res.status(400).json({ error: 'Day of week must be between 0 (Sunday) and 6 (Saturday)' });
+  // Validate date format
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(date)) {
+    return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD format' });
   }
 
   // Check if slot belongs to tutor
@@ -284,9 +265,9 @@ router.put('/:slotId', authenticateToken, isTutor, async (req, res) => {
       // Check for overlapping slots (excluding current slot)
       db.get(
         `SELECT * FROM tutor_availability 
-         WHERE tutor_id = ? AND day_of_week = ? AND id != ?
+         WHERE tutor_id = ? AND date = ? AND id != ?
          AND ((start_time <= ? AND end_time > ?) OR (start_time < ? AND end_time >= ?))`,
-        [tutorId, day_of_week, slotId, start_time, start_time, end_time, end_time],
+        [tutorId, date, slotId, start_time, start_time, end_time, end_time],
         (err, overlap) => {
           if (err) {
             db.close();
@@ -301,9 +282,9 @@ router.put('/:slotId', authenticateToken, isTutor, async (req, res) => {
           // Update slot
           db.run(
             `UPDATE tutor_availability 
-             SET day_of_week = ?, start_time = ?, end_time = ?, topics = ?
+             SET date = ?, start_time = ?, end_time = ?, topics = ?
              WHERE id = ? AND tutor_id = ?`,
-            [day_of_week, start_time, end_time, topics, slotId, tutorId],
+            [date, start_time, end_time, topics, slotId, tutorId],
             (err) => {
               if (err) {
                 db.close();
@@ -397,24 +378,22 @@ router.delete('/:slotId', authenticateToken, isTutor, async (req, res) => {
   );
 });
 
-// Get available slots for a specific day
+// Get available slots for a specific date
 router.get('/day/:tutorId/:date', async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const { tutorId, date } = req.params;
   const { duration } = req.query; // 20 or 40 minutes
 
-  // Convert date to day of week (0-6) - use explicit time to avoid timezone issues
-  const dayOfWeek = new Date(date + 'T00:00:00').getDay();
-
-  // First, get all availability slots for this tutor on this day of the week
+  // Get all availability slots for this tutor on this specific date
   db.all(
     `SELECT ta.* FROM tutor_availability ta
-     WHERE ta.tutor_id = ? AND ta.day_of_week = ?
+     WHERE ta.tutor_id = ? AND ta.date = ?
      ORDER BY ta.start_time`,
-    [tutorId, dayOfWeek],
+    [tutorId, date],
     (err, allSlots) => {
       if (err) {
         db.close();
+        console.error('Error fetching availability slots:', err.message);
         return res.status(500).json({ error: 'Failed to fetch availability slots' });
       }
 

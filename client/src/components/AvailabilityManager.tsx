@@ -5,8 +5,7 @@ import './AvailabilityManager.css';
 
 interface TimeSlot {
   id: number;
-  date?: string; // YYYY-MM-DD format (new system)
-  day_of_week?: number; // Legacy system (0-6)
+  date: string; // YYYY-MM-DD format
   start_time: string;
   end_time: string;
   topics: string;
@@ -125,36 +124,19 @@ const AvailabilityManager: React.FC = () => {
     
     // Filter out deleted slots and sort by date
     const filteredSlots = availabilitySlots.filter(slot => !deletedSlotIds.has(slot.id));
-    const sortedSlots = [...filteredSlots].sort((a, b) => {
-      // Handle both date-based and legacy day_of_week based slots
-      if (a.date && b.date) {
-        return a.date.localeCompare(b.date);
-      }
-      // For legacy slots without dates, sort by day_of_week
-      return 0;
-    });
+    const sortedSlots = [...filteredSlots].sort((a, b) => a.date.localeCompare(b.date));
     
     sortedSlots.forEach(slot => {
-      // Use date if available, otherwise create a key for legacy slots
-      const key = slot.date || `legacy-${slot.day_of_week || 'unknown'}`;
-      if (!grouped[key]) {
-        grouped[key] = [];
+      if (!grouped[slot.date]) {
+        grouped[slot.date] = [];
       }
-      grouped[key].push(slot);
+      grouped[slot.date].push(slot);
     });
     
     return grouped;
   };
 
   const formatDate = (dateString: string) => {
-    // Handle legacy slots
-    if (dateString.startsWith('legacy-')) {
-      const dayOfWeek = dateString.replace('legacy-', '');
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      return `${days[parseInt(dayOfWeek)] || 'Unknown Day'} (Legacy Schedule)`;
-    }
-    
-    // Handle date-based slots
     const date = new Date(dateString + 'T00:00:00');
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
