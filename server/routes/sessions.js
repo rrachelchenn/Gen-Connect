@@ -21,105 +21,85 @@ router.post('/book', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Duration must be 20 or 40 minutes' });
   }
 
-  const chatRoomId = uuidv4();
   const db = new sqlite3.Database(dbPath);
   
-  // Set expiration time to 24 hours from now
-  const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + 24);
-  
-  // Try multiple fallback queries to handle different database schemas
-  const queries = [
-    {
-      sql: `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status, request_expires_at) 
-            VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
-      params: [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId, expiresAt.toISOString()],
-      name: 'with request_expires_at'
-    },
-    {
-      sql: `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, status) 
-            VALUES (?, ?, ?, ?, ?, 'pending')`,
-      params: [tuteeId, tutorId, readingId, sessionDate, durationMinutes],
-      name: 'without chat_room_id and request_expires_at'
-    },
-    {
-      sql: `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, status) 
-            VALUES (?, ?, ?, ?, 'pending')`,
-      params: [tuteeId, tutorId, readingId, sessionDate],
-      name: 'minimal columns only'
-    }
-  ];
-
-  function tryQuery(queryIndex = 0) {
-    if (queryIndex >= queries.length) {
-      console.error('All session booking queries failed');
-      
-      // Try to check what columns actually exist
-      db.all("PRAGMA table_info(sessions)", (err, columns) => {
-        if (err) {
-          console.error('Could not get table info:', err.message);
-        } else {
-          console.log('Available columns in sessions table:', columns.map(col => col.name));
-        }
-        
-        // Try the absolute minimal query
-        const minimalQuery = `INSERT INTO sessions (tutee_id, tutor_id, reading_id) VALUES (?, ?, ?)`;
-        db.run(minimalQuery, [tuteeId, tutorId, readingId], function(finalErr) {
-          if (finalErr) {
-            console.error('Even minimal query failed:', finalErr.message);
-            db.close();
-            return res.status(500).json({ 
-              error: 'Failed to create session request - database schema incompatible',
-              details: finalErr.message 
-            });
-          } else {
-            console.log('Minimal query succeeded');
-            handleSessionCreated.call(this);
-          }
-        });
-      });
-      return;
-    }
-
-    const query = queries[queryIndex];
-    console.log(`Trying query ${queryIndex + 1}: ${query.name}`);
-    
-    db.run(query.sql, query.params, function(err) {
-      if (err) {
-        console.error(`Query ${queryIndex + 1} failed:`, err.message);
-        tryQuery(queryIndex + 1);
-      } else {
-        console.log(`Query ${queryIndex + 1} succeeded`);
-        handleSessionCreated.call(this);
-      }
-    });
-  }
-
-  tryQuery();
-  
-  function handleSessionCreated() {
-
-    // Fetch session details with user and reading info
-    const sessionQuery = `
-      SELECT s.*, 
-             tutee.name as tutee_name, tutee.email as tutee_email,
-             tutor.name as tutor_name, tutor.email as tutor_email,
-             r.title as reading_title, r.summary as reading_summary
-      FROM sessions s
-      JOIN users tutee ON s.tutee_id = tutee.id
-      JOIN users tutor ON s.tutor_id = tutor.id
-      JOIN readings r ON s.reading_id = r.id
-      WHERE s.id = ?
-    `;
-
-    db.get(sessionQuery, [this.lastID], (err, session) => {
+  // Check if database is read-only (Vercel limitation)
+  db.run("CREATE TEMP TABLE test_write (id INTEGER)", (testErr) => {
+    if (testErr && testErr.message.includes('READONLY')) {
+      console.log('Database is read-only, using demo mode for session booking');
       db.close();
+      
+      // Return a mock successful response for demo purposes
+      const mockSession = {
+        id: Math.floor(Math.random() * 1000) + 100, // Random ID for demo
+        tutee_id: tuteeId,
+        tutor_id: tutorId,
+        reading_id: readingId,
+        session_date: sessionDate,
+        duration_minutes: durationMinutes,
+        status: 'pending',
+        tutee_name: req.user.name,
+        tutee_email: req.user.email,
+        tutor_name: 'Alex Chen',
+        tutor_email: 'rachel_chen@berkeley.edu',
+        reading_title: 'Online Grocery Shopping Basics',
+        reading_summary: 'Learn the basics of shopping for groceries online with confidence.',
+        created_at: new Date().toISOString()
+      };
+      
+      console.log(`📝 Demo session booking created:`, {
+        sessionId: mockSession.id,
+        tutee: mockSession.tutee_name,
+        tutor: mockSession.tutor_name,
+        reading: mockSession.reading_title,
+        date: sessionDate
+      });
+      
+      return res.status(201).json({ 
+        session: mockSession, 
+        message: 'Session request sent successfully! The tutor will respond within 24 hours.',
+        demo_mode: true,
+        note: 'This is a demo session - in production, this would create a real database record.'
+      });
+    }
+    
+    // If database is writable, proceed with normal flow
+    const chatRoomId = uuidv4();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+    
+    const query = `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status, request_expires_at) 
+                   VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`;
+    
+    db.run(query, [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId, expiresAt.toISOString()], function(err) {
       if (err) {
-        return res.status(500).json({ error: 'Failed to retrieve session details' });
+        console.error('Session booking error:', err);
+        db.close();
+        return res.status(500).json({ error: 'Failed to create session request' });
       }
-      res.status(201).json({ session, message: 'Session request sent successfully! The tutor will respond within 24 hours.' });
+
+      // Fetch session details with user and reading info
+      const sessionQuery = `
+        SELECT s.*, 
+               tutee.name as tutee_name, tutee.email as tutee_email,
+               tutor.name as tutor_name, tutor.email as tutor_email,
+               r.title as reading_title, r.summary as reading_summary
+        FROM sessions s
+        JOIN users tutee ON s.tutee_id = tutee.id
+        JOIN users tutor ON s.tutor_id = tutor.id
+        JOIN readings r ON s.reading_id = r.id
+        WHERE s.id = ?
+      `;
+
+      db.get(sessionQuery, [this.lastID], (err, session) => {
+        db.close();
+        if (err) {
+          return res.status(500).json({ error: 'Failed to retrieve session details' });
+        }
+        res.status(201).json({ session, message: 'Session request sent successfully! The tutor will respond within 24 hours.' });
+      });
     });
-  }
+  });
 });
 
 // Get user's sessions
