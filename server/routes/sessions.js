@@ -28,33 +28,50 @@ router.post('/book', authenticateToken, (req, res) => {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 24);
   
-  // Try with request_expires_at column first, fallback if column doesn't exist
-  const queryWithExpiry = `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status, request_expires_at) 
-                           VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`;
-  
-  const queryFallback = `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status) 
-                         VALUES (?, ?, ?, ?, ?, ?, 'pending')`;
-  
-  db.run(queryWithExpiry, [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId, expiresAt.toISOString()], function(err) {
-    if (err && err.message.includes('no such column: request_expires_at')) {
-      console.log('request_expires_at column not found, using fallback query');
-      // Fallback to query without request_expires_at column
-      db.run(queryFallback, [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId], function(fallbackErr) {
-        if (fallbackErr) {
-          console.error('Session booking error (fallback):', fallbackErr);
-          db.close();
-          return res.status(500).json({ error: 'Failed to create session request' });
-        }
-        handleSessionCreated.call(this);
-      });
-    } else if (err) {
-      console.error('Session booking error:', err);
-      db.close();
-      return res.status(500).json({ error: 'Failed to create session request' });
-    } else {
-      handleSessionCreated.call(this);
+  // Try multiple fallback queries to handle different database schemas
+  const queries = [
+    {
+      sql: `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, chat_room_id, status, request_expires_at) 
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      params: [tuteeId, tutorId, readingId, sessionDate, durationMinutes, chatRoomId, expiresAt.toISOString()],
+      name: 'with request_expires_at'
+    },
+    {
+      sql: `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, duration_minutes, status) 
+            VALUES (?, ?, ?, ?, ?, 'pending')`,
+      params: [tuteeId, tutorId, readingId, sessionDate, durationMinutes],
+      name: 'without chat_room_id and request_expires_at'
+    },
+    {
+      sql: `INSERT INTO sessions (tutee_id, tutor_id, reading_id, session_date, status) 
+            VALUES (?, ?, ?, ?, 'pending')`,
+      params: [tuteeId, tutorId, readingId, sessionDate],
+      name: 'minimal columns only'
     }
-  });
+  ];
+
+  function tryQuery(queryIndex = 0) {
+    if (queryIndex >= queries.length) {
+      console.error('All session booking queries failed');
+      db.close();
+      return res.status(500).json({ error: 'Failed to create session request - database schema incompatible' });
+    }
+
+    const query = queries[queryIndex];
+    console.log(`Trying query ${queryIndex + 1}: ${query.name}`);
+    
+    db.run(query.sql, query.params, function(err) {
+      if (err) {
+        console.error(`Query ${queryIndex + 1} failed:`, err.message);
+        tryQuery(queryIndex + 1);
+      } else {
+        console.log(`Query ${queryIndex + 1} succeeded`);
+        handleSessionCreated.call(this);
+      }
+    });
+  }
+
+  tryQuery();
   
   function handleSessionCreated() {
 
