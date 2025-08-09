@@ -95,7 +95,11 @@ const AvailabilityManager: React.FC = () => {
       if (response.data.demo_mode) {
         setSuccess(`${response.data.message} (Demo mode - slot hidden until database refresh)`);
         // In demo mode, hide the slot client-side since we can't actually delete it
-        setDeletedSlotIds(prev => new Set([...prev, slotId]));
+        setDeletedSlotIds(prev => {
+          const newSet = new Set(prev);
+          newSet.add(slotId);
+          return newSet;
+        });
       } else {
         setSuccess('Availability slot deleted successfully');
         // Always refresh to get updated data
