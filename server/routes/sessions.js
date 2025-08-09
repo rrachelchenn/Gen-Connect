@@ -53,8 +53,32 @@ router.post('/book', authenticateToken, (req, res) => {
   function tryQuery(queryIndex = 0) {
     if (queryIndex >= queries.length) {
       console.error('All session booking queries failed');
-      db.close();
-      return res.status(500).json({ error: 'Failed to create session request - database schema incompatible' });
+      
+      // Try to check what columns actually exist
+      db.all("PRAGMA table_info(sessions)", (err, columns) => {
+        if (err) {
+          console.error('Could not get table info:', err.message);
+        } else {
+          console.log('Available columns in sessions table:', columns.map(col => col.name));
+        }
+        
+        // Try the absolute minimal query
+        const minimalQuery = `INSERT INTO sessions (tutee_id, tutor_id, reading_id) VALUES (?, ?, ?)`;
+        db.run(minimalQuery, [tuteeId, tutorId, readingId], function(finalErr) {
+          if (finalErr) {
+            console.error('Even minimal query failed:', finalErr.message);
+            db.close();
+            return res.status(500).json({ 
+              error: 'Failed to create session request - database schema incompatible',
+              details: finalErr.message 
+            });
+          } else {
+            console.log('Minimal query succeeded');
+            handleSessionCreated.call(this);
+          }
+        });
+      });
+      return;
     }
 
     const query = queries[queryIndex];
