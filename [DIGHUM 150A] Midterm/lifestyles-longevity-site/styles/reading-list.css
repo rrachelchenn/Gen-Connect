@@ -1,0 +1,464 @@
+/* Reading List Specific Styles */
+
+.main-content {
+    margin-top: 80px;
+    padding: 2rem 0;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #00B4D8;
+    margin-bottom: 1rem;
+}
+
+.page-subtitle {
+    font-size: 1.2rem;
+    color: #03045E;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Reading Navigation */
+.reading-navigation {
+    margin-bottom: 3rem;
+}
+
+.reading-navigation h2 {
+    text-align: center;
+    color: #00B4D8;
+    margin-bottom: 2rem;
+}
+
+.category-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.category-btn {
+    padding: 10px 20px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    color: #03045E;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    background: #00B4D8;
+    color: white;
+    border-color: #00B4D8;
+}
+
+/* Reading Introduction */
+.reading-introduction {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 3rem;
+}
+
+.reading-introduction h2 {
+    color: #00B4D8;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.intro-content p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    color: #03045E;
+}
+
+/* Reading Items Grid */
+.readings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.reading-item {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.reading-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.reading-item.hidden {
+    display: none;
+}
+
+/* Reading Header */
+.reading-header {
+    background: linear-gradient(135deg, #0077B6, #03045E);
+    color: white;
+    padding: 2rem;
+}
+
+.reading-header h3 {
+    color: white;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+    line-height: 1.3;
+}
+
+.reading-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.reading-meta span {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Reading Content */
+.reading-content {
+    padding: 2rem;
+}
+
+.citation {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #4a90c4;
+    margin-bottom: 2rem;
+    font-family: Georgia, serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Why Important Section */
+.why-important {
+    margin-bottom: 2rem;
+}
+
+.why-important h4 {
+    color: #2c5282;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.why-important p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.why-important strong {
+    color: #4a90c4;
+}
+
+/* Key Concepts */
+.key-concepts {
+    margin-bottom: 2rem;
+}
+
+.key-concepts h4 {
+    color: #2c5282;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.concept {
+    display: inline-block;
+    background: #e9f4ff;
+    color: #4a90c4;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0.25rem;
+    border: 1px solid #b3d9ff;
+}
+
+/* Connections and Applications */
+.connections,
+.real-world-application,
+.methodology-influence,
+.archive-application,
+.archive-connection,
+.design-influence,
+.contrast-note {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.connections h4,
+.real-world-application h4,
+.methodology-influence h4,
+.archive-application h4,
+.archive-connection h4,
+.design-influence h4,
+.contrast-note h4 {
+    color: #2c5282;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.connections a,
+.archive-connection a {
+    color: #4a90c4;
+    text-decoration: none;
+}
+
+.connections a:hover,
+.archive-connection a:hover {
+    text-decoration: underline;
+}
+
+/* Reading Conclusions */
+.reading-conclusions {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 3rem;
+}
+
+.reading-conclusions h2 {
+    color: #2c5282;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.conclusions-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.takeaway-card {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    border-top: 4px solid #4a90c4;
+}
+
+.takeaway-card h3 {
+    color: #2c5282;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.takeaway-card i {
+    font-size: 1.5rem;
+}
+
+.takeaway-card p {
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Additional Resources */
+.additional-resources {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.additional-resources h2 {
+    color: #2c5282;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.resource-category {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+    border-left: 4px solid #4a90c4;
+}
+
+.resource-category h3 {
+    color: #2c5282;
+    margin-bottom: 1.5rem;
+}
+
+.resource-category ul {
+    list-style: none;
+    padding: 0;
+}
+
+.resource-category li {
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+    color: #555;
+}
+
+.resource-category li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #4a90c4;
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .category-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .category-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .reading-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .conclusions-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .resources-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .readings-grid {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .reading-introduction,
+    .reading-conclusions,
+    .additional-resources {
+        padding: 2rem 1rem;
+    }
+    
+    .reading-content {
+        padding: 1.5rem;
+    }
+    
+    .reading-header {
+        padding: 1.5rem;
+    }
+    
+    .page-header {
+        padding: 1rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .takeaway-card,
+    .resource-category {
+        padding: 1.5rem;
+    }
+}
+
+/* Filter Animation */
+.reading-item {
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.reading-item.filtering {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+/* Accessibility */
+.reading-item:focus-within {
+    outline: 2px solid #4a90c4;
+    outline-offset: 2px;
+}
+
+.category-btn:focus {
+    outline: 2px solid #4a90c4;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .reading-navigation,
+    .nav-menu,
+    .hamburger {
+        display: none;
+    }
+    
+    .reading-item {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+        margin-bottom: 2rem;
+    }
+    
+    .reading-header {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+    }
+    
+    .reading-header h3 {
+        color: #000 !important;
+    }
+}
+
+/* Loading States */
+.readings-grid.loading {
+    opacity: 0.6;
+}
+
+.reading-item.loading {
+    pointer-events: none;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .reading-header {
+        background: #000;
+    }
+    
+    .concept {
+        background: #fff;
+        border: 2px solid #000;
+        color: #000;
+    }
+}
