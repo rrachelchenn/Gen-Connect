@@ -108,33 +108,6 @@ const Login: React.FC = () => {
           </p>
         </div>
       </div>
-
-      {/* Demo accounts info */}
-      <div className="card" style={{ marginTop: '2rem', backgroundColor: '#f0f9ff' }}>
-        <h3 style={{ marginBottom: '1rem', color: '#1e40af' }}>
-          Try GenConnect with Demo Accounts
-        </h3>
-        <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
-          <div style={{ padding: '1rem', backgroundColor: 'white', borderRadius: '8px' }}>
-            <h4 style={{ marginBottom: '0.5rem', color: '#059669' }}>Senior (Tutee)</h4>
-            <p style={{ fontSize: '0.9rem', margin: '0.25rem 0' }}>
-              <strong>Email:</strong> demo.senior@genconnect.com
-            </p>
-            <p style={{ fontSize: '0.9rem', margin: '0.25rem 0' }}>
-              <strong>Password:</strong> demo123
-            </p>
-          </div>
-          <div style={{ padding: '1rem', backgroundColor: 'white', borderRadius: '8px' }}>
-            <h4 style={{ marginBottom: '0.5rem', color: '#dc2626' }}>Student (Tutor)</h4>
-            <p style={{ fontSize: '0.9rem', margin: '0.25rem 0' }}>
-              <strong>Email:</strong> demo.student@genconnect.com
-            </p>
-            <p style={{ fontSize: '0.9rem', margin: '0.25rem 0' }}>
-              <strong>Password:</strong> demo123
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

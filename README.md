@@ -98,20 +98,6 @@ Help senior citizens become more comfortable with technology through accessible,
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
-### Demo Accounts
-
-Test the application with these pre-seeded demo accounts:
-
-#### Senior Citizen (Tutee)
-- **Email**: demo.senior@genconnect.com
-- **Password**: demo123
-- **Name**: Betty Johnson
-
-#### College Student (Tutor)
-- **Email**: demo.student@genconnect.com
-- **Password**: demo123
-- **Name**: Alex Chen
-
 ## 📖 Sample Reading Topics
 
 GenConnect includes these pre-loaded reading topics:

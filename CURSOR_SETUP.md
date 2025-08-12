@@ -65,19 +65,7 @@ GenConnect-main/
 - `npm run build` - Build the React app for production
 - `npm run install-deps` - Install all dependencies
 
-## Demo Accounts
-
-Test the application with these pre-seeded demo accounts:
-
-### Senior Citizen (Tutee)
-- **Email**: demo.senior@genconnect.com
-- **Password**: demo123
-- **Name**: Betty Johnson
-
-### College Student (Tutor)
-- **Email**: demo.student@genconnect.com
-- **Password**: demo123
-- **Name**: Alex Chen
+## Development Workflow
 
 ## Development Workflow
 
