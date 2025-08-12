@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SessionRequest {
   id: number;
@@ -21,6 +22,7 @@ interface RequestStats {
 }
 
 const SessionRequests: React.FC = () => {
+  const { user } = useAuth();
   const [requests, setRequests] = useState<SessionRequest[]>([]);
   const [stats, setStats] = useState<RequestStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,9 +40,10 @@ const SessionRequests: React.FC = () => {
       setRequests(response.data);
     } catch (err: any) {
       console.error('Error fetching requests:', err);
-      // Don't show error if it's just no requests
-      if (err.response?.status === 404 || err.response?.status === 403) {
+      // Don't show error if it's just no requests or user is not a tutor
+      if (err.response?.status === 404 || err.response?.status === 403 || err.response?.status === 401) {
         setRequests([]);
+        setError(''); // Clear any previous errors
       } else {
         setError('Failed to load pending requests');
       }
@@ -187,7 +190,10 @@ const SessionRequests: React.FC = () => {
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
             <h3>No pending requests</h3>
             <p style={{ color: '#6b7280' }}>
-              You have no session requests waiting for your response.
+              {user?.role === 'tutor' 
+                ? "You have no session requests waiting for your response. When students request sessions, they'll appear here."
+                : "You have no pending session requests. Browse the reading library to request a session with a tutor!"
+              }
             </p>
           </div>
         ) : (

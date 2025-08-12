@@ -42,9 +42,10 @@ const Dashboard: React.FC = () => {
       setSessions(response.data);
     } catch (err: any) {
       console.error('Error fetching sessions:', err);
-      // Don't show error if it's just no sessions
-      if (err.response?.status === 404 || err.response?.status === 403) {
+      // Don't show error if it's just no sessions or user is not authenticated
+      if (err.response?.status === 404 || err.response?.status === 403 || err.response?.status === 401) {
         setSessions([]);
+        setError(''); // Clear any previous errors
       } else {
         setError('Failed to load sessions');
       }
@@ -151,12 +152,13 @@ const Dashboard: React.FC = () => {
             <h3>No sessions yet</h3>
             <p style={{ marginBottom: '2rem' }}>
               {user.role === 'tutee' 
-                ? 'Start by browsing our reading library and booking your first session!'
-                : 'Sessions will appear here when students book with you.'}
+                ? "Welcome to GenConnect! You haven't scheduled any learning sessions yet. Browse our reading library to find topics you'd like to learn about, then book sessions with our experienced tutors."
+                : "Welcome to GenConnect! You haven't scheduled any tutoring sessions yet. Students will be able to request sessions with you once they browse the reading library."
+              }
             </p>
             {user.role === 'tutee' && (
-              <Link to="/readings" className="btn btn-primary">
-                Browse Readings
+              <Link to="/reading-library" className="btn btn-primary">
+                Browse Reading Library
               </Link>
             )}
           </div>
