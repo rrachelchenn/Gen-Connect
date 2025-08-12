@@ -16,33 +16,54 @@ const tutorsRoutes = require('./routes/tutors');
 const discussionsRoutes = require('./routes/discussions');
 
 const { initDatabase } = require('./database/init');
-const { seedDemoUsers } = require('./database/seed');
-const { seedSampleTutors } = require('./database/seedTutors');
-const { seedEnhancedReadings } = require('./database/seedEnhancedReadings');
 
 const app = express();
 const server = http.createServer(app);
+
+// CORS configuration for production
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://www.genconnect.live', 'https://genconnect.live']
+    : ['http://localhost:3000', 'http://localhost:3001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 const io = socketIo(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+  cors: corsOptions
 });
 
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client/build')));
 
-// Initialize database and seed demo users
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Initialize database
 initDatabase();
-setTimeout(() => {
-  seedDemoUsers();
-  seedSampleTutors();
-  seedEnhancedReadings();
-}, 1000); // Delay to ensure database is ready
+
+// Only seed demo data in development
+if (process.env.NODE_ENV !== 'production') {
+  const { seedDemoUsers } = require('./database/seed');
+  const { seedSampleTutors } = require('./database/seedTutors');
+  const { seedEnhancedReadings } = require('./database/seedEnhancedReadings');
+  
+  setTimeout(() => {
+    seedDemoUsers();
+    seedSampleTutors();
+    seedEnhancedReadings();
+  }, 1000);
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -78,11 +99,15 @@ io.on('connection', (socket) => {
   });
 });
 
-// Serve React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
-});
+// Serve React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
+}
 
 server.listen(PORT, () => {
-  console.log(`GenConnect server running on port ${PORT}`);
+  console.log(`GenConnect server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
