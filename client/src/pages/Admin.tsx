@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE_URL } from '../config/api';
 
@@ -43,25 +44,19 @@ const Admin: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/all`, {
+      const response = await axios.get(`${API_BASE_URL}/users/all`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      if (!response.ok) {
-        if (response.status === 403) {
-          setError('Access denied. Admin privileges required.');
-        } else {
-          setError('Failed to fetch users');
-        }
-        return;
+      setUsers(response.data.users);
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        setError('Access denied. Admin privileges required.');
+      } else {
+        setError('Failed to fetch users');
       }
-
-      const data = await response.json();
-      setUsers(data.users);
-    } catch (err) {
-      setError('Failed to fetch users');
     } finally {
       setLoading(false);
     }
