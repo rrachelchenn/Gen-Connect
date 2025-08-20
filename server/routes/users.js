@@ -91,43 +91,19 @@ router.put('/profile', authenticateToken, (req, res) => {
 
 // Get all users (admin only)
 router.get('/all', authenticateToken, (req, res) => {
-  // For now, allow any authenticated user to see all users
-  // In production, you might want to add admin role checks
+  // Check if user is admin (only rachel chen can access)
+  if (req.user.name !== 'rachel chen') {
+    return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+  }
+
   const db = new sqlite3.Database(dbPath);
   
-  const query = `
-    SELECT id, email, name, role, tech_comfort_level, college, major, 
-           created_at, 
-           CASE 
-             WHEN role = 'tutor' THEN 'College Student (Tutor)'
-             WHEN role = 'tutee' THEN 'Senior Citizen (Tutee)'
-             ELSE role
-           END as role_display
-    FROM users 
-    ORDER BY created_at DESC
-  `;
-  
-  db.all(query, [], (err, users) => {
+  db.all('SELECT id, email, name, role, tech_comfort_level, college, major, bio, created_at FROM users ORDER BY created_at DESC', (err, users) => {
     db.close();
     if (err) {
-      console.error('Error fetching all users:', err);
       return res.status(500).json({ error: 'Failed to fetch users' });
     }
-    
-    // Add some statistics
-    const stats = {
-      total_users: users.length,
-      tutors: users.filter(u => u.role === 'tutor').length,
-      tutees: users.filter(u => u.role === 'tutee').length,
-      recent_signups: users.filter(u => {
-        const signupDate = new Date(u.created_at);
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return signupDate > weekAgo;
-      }).length
-    };
-    
-    res.json({ users, stats });
+    res.json({ users });
   });
 });
 
