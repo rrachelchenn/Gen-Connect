@@ -21,26 +21,14 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Check if user has admin access
-  if (!user || user.name !== 'rachel chen') {
-    return (
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
-        <div className="card">
-          <div className="card-header">
-            <h1 className="card-title">Access Denied</h1>
-          </div>
-          <div className="card-body">
-            <p>You do not have permission to access the admin panel.</p>
-            <p>Only the account "rachel chen" can access this area.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    // Only fetch users if user has admin access
+    if (user && user.name === 'rachel chen') {
+      fetchUsers();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const fetchUsers = async () => {
     try {
@@ -61,6 +49,23 @@ const Admin: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Check if user has admin access
+  if (!user || user.name !== 'rachel chen') {
+    return (
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
+        <div className="card">
+          <div className="card-header">
+            <h1 className="card-title">Access Denied</h1>
+          </div>
+          <div className="card-body">
+            <p>You do not have permission to access the admin panel.</p>
+            <p>Only the account "rachel chen" can access this area.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate statistics
   const totalUsers = users.length;
@@ -141,7 +146,7 @@ const Admin: React.FC = () => {
             borderRadius: '8px', 
             textAlign: 'center' 
           }}>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: '#be185d' }}>{recentSignups}</h3>
+            <h3 style={{ margin: 0, color: '#be185d' }}>{recentSignups}</h3>
             <p style={{ margin: 0, color: '#be185d' }}>Recent Signups (This Week)</p>
           </div>
         </div>
