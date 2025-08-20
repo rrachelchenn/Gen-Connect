@@ -30,6 +30,8 @@ function initDatabase() {
       difficulty_level TEXT CHECK(difficulty_level IN ('easy', 'medium', 'hard')) NOT NULL,
       topic_tags TEXT,
       discussion_questions TEXT, -- JSON array of questions
+      featured_image TEXT, -- URL to featured image
+      media_content TEXT, -- JSON array of media objects with type, url, caption
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 

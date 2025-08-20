@@ -38,6 +38,9 @@ const Header: React.FC = () => {
               <Link to="/profile" className="nav-link">
                 Profile
               </Link>
+              <Link to="/admin" className="nav-link">
+                Admin
+              </Link>
               <span className="nav-link" style={{ color: '#93c5fd' }}>
                 Welcome, {user.name}!
               </span>

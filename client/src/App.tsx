@@ -12,6 +12,7 @@ import LiveSession from './pages/LiveSession';
 import Feedback from './pages/Feedback';
 import Profile from './pages/Profile';
 import BrowseTutors from './pages/BrowseTutors';
+import Admin from './pages/Admin';
 import './App.css';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -91,6 +92,11 @@ function App() {
               <Route path="/profile" element={
                 <PrivateRoute>
                   <Profile />
+                </PrivateRoute>
+              } />
+              <Route path="/admin" element={
+                <PrivateRoute>
+                  <Admin />
                 </PrivateRoute>
               } />
             </Routes>
