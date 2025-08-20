@@ -4,7 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 
-const authRoutes = require('./routes/auth');
+const { router: authRoutes, authenticateToken } = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const readingRoutes = require('./routes/readings');
 const sessionRoutes = require('./routes/sessions');

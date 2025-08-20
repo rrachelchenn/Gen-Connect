@@ -1,10 +1,8 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { db } = require('../database/config');
 const { authenticateToken } = require('./auth');
 
 const router = express.Router();
-const dbPath = path.join(__dirname, '../database/genconnect.db');
 
 // Get all tutors
 router.get('/tutors', (req, res) => {
