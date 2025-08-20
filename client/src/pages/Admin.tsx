@@ -23,7 +23,7 @@ const Admin: React.FC = () => {
 
   useEffect(() => {
     // Only fetch users if user has admin access
-    if (user && user.name === 'rachel chen') {
+    if (user && user.name === 'Rachel Chen') {
       fetchUsers();
     } else {
       setLoading(false);
@@ -51,7 +51,7 @@ const Admin: React.FC = () => {
   };
 
   // Check if user has admin access
-  if (!user || user.name !== 'rachel chen') {
+  if (!user || user.name !== 'Rachel Chen') {
     return (
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
         <div className="card">
@@ -60,7 +60,7 @@ const Admin: React.FC = () => {
           </div>
           <div className="card-body">
             <p>You do not have permission to access the admin panel.</p>
-            <p>Only the account "rachel chen" can access this area.</p>
+            <p>Only the account "Rachel Chen" can access this area.</p>
           </div>
         </div>
       </div>

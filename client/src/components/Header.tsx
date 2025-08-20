@@ -38,7 +38,7 @@ const Header: React.FC = () => {
               <Link to="/profile" className="nav-link">
                 Profile
               </Link>
-              {user.name === 'rachel chen' && (
+              {user.name === 'Rachel Chen' && (
                 <Link to="/admin" className="nav-link">
                   Admin
                 </Link>

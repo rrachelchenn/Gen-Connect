@@ -91,8 +91,8 @@ router.put('/profile', authenticateToken, (req, res) => {
 
 // Get all users (admin only)
 router.get('/all', authenticateToken, (req, res) => {
-  // Check if user is admin (only rachel chen can access)
-  if (req.user.name !== 'rachel chen') {
+  // Check if user is admin (only Rachel Chen can access)
+  if (req.user.name !== 'Rachel Chen') {
     return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
   }
 
