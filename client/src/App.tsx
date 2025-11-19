@@ -64,11 +64,7 @@ function App() {
                   <ReadingLibrary />
                 </PrivateRoute>
               } />
-              <Route path="/browse-tutors" element={
-                <PrivateRoute>
-                  <BrowseTutors />
-                </PrivateRoute>
-              } />
+              <Route path="/browse-tutors" element={<BrowseTutors />} />
               <Route path="/book-session/:readingId" element={
                 <PrivateRoute>
                   <BookSession />

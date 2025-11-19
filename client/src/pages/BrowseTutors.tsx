@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
+import TutorContactForm from '../components/TutorContactForm';
 
 interface TutorProfile {
   id: number;
@@ -33,12 +34,15 @@ interface Review {
 }
 
 const BrowseTutors: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [tutors, setTutors] = useState<TutorProfile[]>([]);
   const [filteredTutors, setFilteredTutors] = useState<TutorProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTutor, setSelectedTutor] = useState<TutorProfile | null>(null);
   const [tutorReviews, setTutorReviews] = useState<Review[]>([]);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactTutor, setContactTutor] = useState<TutorProfile | null>(null);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -64,6 +68,18 @@ const BrowseTutors: React.FC = () => {
   useEffect(() => {
     fetchTutors();
   }, []);
+
+  // Auto-open contact form if tutor ID is in URL
+  useEffect(() => {
+    const tutorIdParam = searchParams.get('tutor');
+    if (tutorIdParam && tutors.length > 0) {
+      const tutorId = parseInt(tutorIdParam);
+      const tutor = tutors.find(t => t.id === tutorId);
+      if (tutor) {
+        openContactForm(tutor);
+      }
+    }
+  }, [searchParams, tutors]);
 
   useEffect(() => {
     applyFilters();
@@ -153,6 +169,16 @@ const BrowseTutors: React.FC = () => {
   const closeTutorProfile = () => {
     setSelectedTutor(null);
     setTutorReviews([]);
+  };
+
+  const openContactForm = (tutor: TutorProfile) => {
+    setContactTutor(tutor);
+    setShowContactForm(true);
+  };
+
+  const closeContactForm = () => {
+    setContactTutor(null);
+    setShowContactForm(false);
   };
 
   const renderStars = (rating: number) => {
@@ -315,13 +341,13 @@ const BrowseTutors: React.FC = () => {
               >
                 View Profile
               </button>
-              <Link 
-                to={`/book-session?tutor=${tutor.id}`}
+              <button 
+                onClick={() => openContactForm(tutor)}
                 className="btn btn-primary"
-                style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
+                style={{ flex: 1 }}
               >
-                Book Session
-              </Link>
+                Contact
+              </button>
             </div>
           </div>
         ))}
@@ -407,17 +433,29 @@ const BrowseTutors: React.FC = () => {
                 <button onClick={closeTutorProfile} className="btn btn-outline" style={{ flex: 1 }}>
                   Close
                 </button>
-                <Link 
-                  to={`/book-session?tutor=${selectedTutor.id}`}
+                <button 
+                  onClick={() => {
+                    closeTutorProfile();
+                    openContactForm(selectedTutor);
+                  }}
                   className="btn btn-primary"
-                  style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
+                  style={{ flex: 1 }}
                 >
-                  Book Session with {selectedTutor.name}
-                </Link>
+                  Contact {selectedTutor.name}
+                </button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Contact Form Modal */}
+      {showContactForm && contactTutor && (
+        <TutorContactForm
+          tutorId={contactTutor.id}
+          tutorName={contactTutor.name}
+          onClose={closeContactForm}
+        />
       )}
     </div>
   );

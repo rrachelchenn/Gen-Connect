@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
-import SessionRequests from '../components/SessionRequests';
+import ContactRequests from '../components/ContactRequests';
 import SessionArticleWorkspace from '../components/SessionArticleWorkspace';
 
 interface Session {
@@ -97,17 +97,6 @@ const Dashboard: React.FC = () => {
             📚 Browse Reading Library
           </Link>
           
-          {user.role === 'tutee' && (
-            <>
-              <Link to="/browse-tutors" className="btn btn-outline" style={{ textAlign: 'center' }}>
-                👩‍🎓 Browse Tutors
-              </Link>
-              <Link to="/book-session" className="btn btn-outline" style={{ textAlign: 'center' }}>
-                📅 Book a Session
-              </Link>
-            </>
-          )}
-          
           {user.role === 'tutor' && (
             <Link to="/profile" className="btn btn-outline" style={{ textAlign: 'center' }}>
               ⏰ Set Availability
@@ -120,9 +109,9 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Session Requests Section for Tutors */}
+      {/* Contact Requests Section for Tutors */}
       {user.role === 'tutor' && (
-        <SessionRequests />
+        <ContactRequests />
       )}
 
       {/* Session Article Workspace */}

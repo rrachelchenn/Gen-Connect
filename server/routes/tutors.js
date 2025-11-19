@@ -196,6 +196,120 @@ router.get('/browse', async (req, res) => {
   });
 });
 
+// Handle contact form submissions (no auth required)
+router.post('/contact', (req, res) => {
+  const { tutorId, name, email, phone, message, preferredTopics } = req.body;
+  
+  if (!tutorId || !name || !email || !phone || !preferredTopics) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const db = new sqlite3.Database(dbPath);
+  
+  // Check if contact_requests table exists, create if not
+  db.run(`
+    CREATE TABLE IF NOT EXISTS contact_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tutor_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      preferred_topics TEXT NOT NULL,
+      message TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (tutor_id) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating contact_requests table:', err);
+      db.close();
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    // Insert the contact request
+    const insertQuery = `
+      INSERT INTO contact_requests (tutor_id, name, email, phone, preferred_topics, message)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    
+    db.run(insertQuery, [tutorId, name, email, phone, preferredTopics, message || ''], function(err) {
+      db.close();
+      
+      if (err) {
+        console.error('Error inserting contact request:', err);
+        return res.status(500).json({ error: 'Failed to submit contact request' });
+      }
+      
+      console.log(`✅ Contact request submitted: ${name} -> Tutor ${tutorId}`);
+      res.json({ 
+        success: true, 
+        message: 'Contact request submitted successfully',
+        requestId: this.lastID
+      });
+    });
+  });
+});
+
+// Get contact requests for a tutor (requires auth)
+router.get('/:tutorId/contact-requests', (req, res) => {
+  const { tutorId } = req.params;
+  const db = new sqlite3.Database(dbPath);
+  
+  // Check if contact_requests table exists
+  db.get("SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name='contact_requests'", (err, tableExists) => {
+    if (err || !tableExists || tableExists.count === 0) {
+      console.log('📋 Contact requests table does not exist yet');
+      db.close();
+      return res.json([]);
+    }
+    
+    const query = `
+      SELECT * FROM contact_requests
+      WHERE tutor_id = ?
+      ORDER BY created_at DESC
+    `;
+    
+    db.all(query, [tutorId], (err, requests) => {
+      db.close();
+      
+      if (err) {
+        console.error('Error fetching contact requests:', err);
+        return res.status(500).json({ error: 'Failed to fetch contact requests' });
+      }
+      
+      console.log(`✅ Fetched ${requests.length} contact requests for tutor ${tutorId}`);
+      res.json(requests);
+    });
+  });
+});
+
+// Update contact request status
+router.patch('/contact-requests/:requestId', (req, res) => {
+  const { requestId } = req.params;
+  const { status } = req.body;
+  
+  if (!status || !['pending', 'contacted', 'scheduled', 'completed'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+  
+  const db = new sqlite3.Database(dbPath);
+  
+  const query = `UPDATE contact_requests SET status = ? WHERE id = ?`;
+  
+  db.run(query, [status, requestId], function(err) {
+    db.close();
+    
+    if (err) {
+      console.error('Error updating contact request:', err);
+      return res.status(500).json({ error: 'Failed to update request status' });
+    }
+    
+    console.log(`✅ Updated contact request ${requestId} to ${status}`);
+    res.json({ success: true, message: 'Status updated' });
+  });
+});
+
 // Get tutor reviews
 router.get('/:tutorId/reviews', (req, res) => {
   const { tutorId } = req.params;

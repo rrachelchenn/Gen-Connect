@@ -52,11 +52,14 @@ const Header: React.FC = () => {
             </>
           ) : (
             <>
+              <Link to="/browse-tutors" className="nav-link">
+                Browse Tutors
+              </Link>
               <Link to="/login" className="nav-link">
-                Login
+                Tutor Login
               </Link>
               <Link to="/signup" className="btn btn-primary">
-                Sign Up
+                Become a Tutor
               </Link>
             </>
           )}

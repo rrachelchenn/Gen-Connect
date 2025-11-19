@@ -9,8 +9,7 @@ const Signup: React.FC = () => {
     password: '',
     confirmPassword: '',
     name: '',
-    role: 'tutee' as 'tutee' | 'tutor',
-    techComfortLevel: 'beginner',
+    role: 'tutor' as 'tutee' | 'tutor',
     college: '',
     major: ''
   });
@@ -59,10 +58,9 @@ const Signup: React.FC = () => {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        role: formData.role,
-        techComfortLevel: formData.role === 'tutee' ? formData.techComfortLevel : undefined,
-        college: formData.role === 'tutor' ? formData.college : undefined,
-        major: formData.role === 'tutor' ? formData.major : undefined
+        role: 'tutor',
+        college: formData.college,
+        major: formData.major
       });
       navigate('/dashboard');
     } catch (err: any) {
@@ -77,10 +75,10 @@ const Signup: React.FC = () => {
       <div className="card">
         <div className="card-header">
           <h1 className="card-title" style={{ textAlign: 'center' }}>
-            Join GenConnect
+            Become a GenConnect Tutor
           </h1>
           <p style={{ textAlign: 'center', fontSize: '1.1rem', color: '#6b7280' }}>
-            Connect with others for tech learning sessions
+            Join our community of college students helping seniors learn technology
           </p>
         </div>
 
@@ -91,66 +89,24 @@ const Signup: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Role Selection */}
-          <div className="form-group">
-            <label className="form-label">
-              I want to sign up as:
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '1rem', 
-                border: `2px solid ${formData.role === 'tutee' ? '#3b82f6' : '#d1d5db'}`,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: formData.role === 'tutee' ? '#eff6ff' : 'white'
-              }}>
-                <input
-                  type="radio"
-                  name="role"
-                  value="tutee"
-                  checked={formData.role === 'tutee'}
-                  onChange={handleChange}
-                  style={{ marginRight: '0.5rem' }}
-                />
-                <div>
-                  <div style={{ fontWeight: '600', fontSize: '1.1rem' }}>
-                    🧓 Senior Citizen (Tutee)
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                    I want to learn tech skills
-                  </div>
-                </div>
-              </label>
-
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '1rem', 
-                border: `2px solid ${formData.role === 'tutor' ? '#3b82f6' : '#d1d5db'}`,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: formData.role === 'tutor' ? '#eff6ff' : 'white'
-              }}>
-                <input
-                  type="radio"
-                  name="role"
-                  value="tutor"
-                  checked={formData.role === 'tutor'}
-                  onChange={handleChange}
-                  style={{ marginRight: '0.5rem' }}
-                />
-                <div>
-                  <div style={{ fontWeight: '600', fontSize: '1.1rem' }}>
-                    👩‍🎓 College Student (Tutor)
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                    I want to help others with tech
-                  </div>
-                </div>
-              </label>
-            </div>
+          {/* Info Box for Seniors */}
+          <div style={{ 
+            padding: '1rem', 
+            backgroundColor: '#f0f9ff', 
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            border: '2px solid #3b82f6'
+          }}>
+            <p style={{ margin: 0, fontSize: '1rem', color: '#1e40af' }}>
+              <strong>👋 Are you a senior citizen looking to learn?</strong><br />
+              <span style={{ color: '#6b7280' }}>
+                No signup needed! Just browse our tutors on the{' '}
+                <Link to="/browse-tutors" style={{ color: '#3b82f6', fontWeight: '600' }}>
+                  Browse Tutors page
+                </Link>
+                {' '}and contact them directly.
+              </span>
+            </p>
           </div>
 
           {/* Basic Information */}
@@ -220,61 +176,38 @@ const Signup: React.FC = () => {
             />
           </div>
 
-          {/* Role-specific fields */}
-          {formData.role === 'tutee' && (
-            <div className="form-group">
-              <label htmlFor="techComfortLevel" className="form-label">
-                How comfortable are you with technology?
-              </label>
-              <select
-                id="techComfortLevel"
-                name="techComfortLevel"
-                className="form-select"
-                value={formData.techComfortLevel}
-                onChange={handleChange}
-              >
-                <option value="beginner">Beginner - I'm new to most tech</option>
-                <option value="intermediate">Intermediate - I know some basics</option>
-                <option value="advanced">Advanced - I'm pretty comfortable</option>
-              </select>
-            </div>
-          )}
+          {/* Tutor-specific fields */}
+          <div className="form-group">
+            <label htmlFor="college" className="form-label">
+              College/University
+            </label>
+            <input
+              type="text"
+              id="college"
+              name="college"
+              className="form-input"
+              value={formData.college}
+              onChange={handleChange}
+              required
+              placeholder="Enter your college or university"
+            />
+          </div>
 
-          {formData.role === 'tutor' && (
-            <>
-              <div className="form-group">
-                <label htmlFor="college" className="form-label">
-                  College/University
-                </label>
-                <input
-                  type="text"
-                  id="college"
-                  name="college"
-                  className="form-input"
-                  value={formData.college}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter your college or university"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="major" className="form-label">
-                  Major/Field of Study
-                </label>
-                <input
-                  type="text"
-                  id="major"
-                  name="major"
-                  className="form-input"
-                  value={formData.major}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter your major or field of study"
-                />
-              </div>
-            </>
-          )}
+          <div className="form-group">
+            <label htmlFor="major" className="form-label">
+              Major/Field of Study
+            </label>
+            <input
+              type="text"
+              id="major"
+              name="major"
+              className="form-input"
+              value={formData.major}
+              onChange={handleChange}
+              required
+              placeholder="Enter your major or field of study"
+            />
+          </div>
 
           <button
             type="submit"
@@ -282,7 +215,7 @@ const Signup: React.FC = () => {
             disabled={loading}
             style={{ width: '100%' }}
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Creating Tutor Account...' : 'Become a Tutor'}
           </button>
         </form>
 

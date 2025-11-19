@@ -31,10 +31,10 @@ const Login: React.FC = () => {
       <div className="card">
         <div className="card-header">
           <h1 className="card-title" style={{ textAlign: 'center' }}>
-            Welcome Back to GenConnect
+            Tutor Login
           </h1>
           <p style={{ textAlign: 'center', fontSize: '1.1rem', color: '#6b7280' }}>
-            Sign in to continue your learning journey
+            Sign in to manage your tutoring sessions
           </p>
         </div>
 
@@ -45,6 +45,26 @@ const Login: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit}>
+          {/* Info Box for Seniors */}
+          <div style={{ 
+            padding: '1rem', 
+            backgroundColor: '#f0f9ff', 
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            border: '2px solid #3b82f6'
+          }}>
+            <p style={{ margin: 0, fontSize: '1rem', color: '#1e40af' }}>
+              <strong>👋 Are you a senior citizen looking to learn?</strong><br />
+              <span style={{ color: '#6b7280' }}>
+                No login needed! Just browse our tutors on the{' '}
+                <Link to="/browse-tutors" style={{ color: '#3b82f6', fontWeight: '600' }}>
+                  Browse Tutors page
+                </Link>
+                {' '}and contact them directly.
+              </span>
+            </p>
+          </div>
+
           <div className="form-group">
             <label htmlFor="email" className="form-label">
               Email Address
@@ -94,7 +114,7 @@ const Login: React.FC = () => {
           borderTop: '1px solid #e5e7eb' 
         }}>
           <p style={{ fontSize: '1.1rem' }}>
-            Don't have an account?{' '}
+            Want to become a tutor?{' '}
             <Link 
               to="/signup" 
               style={{ 
