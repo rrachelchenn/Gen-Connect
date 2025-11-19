@@ -228,7 +228,7 @@ router.get('/browse', (req, res) => {
 });
 
 // Handle tutor applications (no auth required)
-router.post('/apply', (req, res) => {
+router.post('/apply', async (req, res) => {
   const { name, email, phone, college, major, age, specialties, bio, availability, experience, why_tutor } = req.body;
   
   if (!name || !email || !phone || !college || !major || !age || !specialties || !bio || !availability || !why_tutor) {
@@ -271,23 +271,30 @@ router.post('/apply', (req, res) => {
   console.log(`Timestamp: ${application.created_at}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  // Return success immediately (don't wait for email)
+  // Try to send email with 3 second timeout, then respond
+  const emailTimeout = new Promise((resolve) => setTimeout(() => {
+    console.log('⏱️ Email timeout - responding anyway');
+    resolve(false);
+  }, 3000));
+  
+  const emailPromise = sendTutorApplicationNotification(application).catch(err => {
+    console.error('Email notification failed:', err);
+    return false;
+  });
+  
+  // Wait for email or timeout (whichever comes first)
+  await Promise.race([emailPromise, emailTimeout]);
+  
+  // Return success
   res.json({ 
     success: true, 
     message: 'Application submitted successfully',
     applicationId: application.id
   });
-  
-  // Send email notification AFTER response (truly non-blocking)
-  setImmediate(() => {
-    sendTutorApplicationNotification(application).catch(err => {
-      console.error('Email notification failed:', err);
-    });
-  });
 });
 
 // Handle contact form submissions (no auth required)
-router.post('/contact', (req, res) => {
+router.post('/contact', async (req, res) => {
   const { tutorId, name, email, phone, message, preferredTopics } = req.body;
   
   if (!tutorId || !name || !email || !phone || !preferredTopics) {
@@ -326,22 +333,29 @@ router.post('/contact', (req, res) => {
   console.log(`Timestamp: ${contactRequest.created_at}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  // Return success immediately (don't wait for email)
+  // Try to send email with 3 second timeout, then respond
+  const emailTimeout = new Promise((resolve) => setTimeout(() => {
+    console.log('⏱️ Email timeout - responding anyway');
+    resolve(false);
+  }, 3000));
+  
+  const emailPromise = sendContactRequestNotification({
+    ...contactRequest,
+    tutorName,
+    preferredTopics
+  }).catch(err => {
+    console.error('Email notification failed:', err);
+    return false;
+  });
+  
+  // Wait for email or timeout (whichever comes first)
+  await Promise.race([emailPromise, emailTimeout]);
+  
+  // Return success
   res.json({ 
     success: true, 
     message: 'Contact request submitted successfully',
     requestId: contactRequest.id
-  });
-  
-  // Send email notification AFTER response (truly non-blocking)
-  setImmediate(() => {
-    sendContactRequestNotification({
-      ...contactRequest,
-      tutorName,
-      preferredTopics
-    }).catch(err => {
-      console.error('Email notification failed:', err);
-    });
   });
 });
 
