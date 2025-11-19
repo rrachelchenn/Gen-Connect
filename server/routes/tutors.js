@@ -271,16 +271,18 @@ router.post('/apply', (req, res) => {
   console.log(`Timestamp: ${application.created_at}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  // Send email notification (async, won't block response)
-  sendTutorApplicationNotification(application).catch(err => {
-    console.error('Email notification failed:', err);
-  });
-  
   // Return success immediately (don't wait for email)
   res.json({ 
     success: true, 
     message: 'Application submitted successfully',
     applicationId: application.id
+  });
+  
+  // Send email notification AFTER response (truly non-blocking)
+  setImmediate(() => {
+    sendTutorApplicationNotification(application).catch(err => {
+      console.error('Email notification failed:', err);
+    });
   });
 });
 
@@ -324,20 +326,22 @@ router.post('/contact', (req, res) => {
   console.log(`Timestamp: ${contactRequest.created_at}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  // Send email notification (async, won't block response)
-  sendContactRequestNotification({
-    ...contactRequest,
-    tutorName,
-    preferredTopics
-  }).catch(err => {
-    console.error('Email notification failed:', err);
-  });
-  
   // Return success immediately (don't wait for email)
   res.json({ 
     success: true, 
     message: 'Contact request submitted successfully',
     requestId: contactRequest.id
+  });
+  
+  // Send email notification AFTER response (truly non-blocking)
+  setImmediate(() => {
+    sendContactRequestNotification({
+      ...contactRequest,
+      tutorName,
+      preferredTopics
+    }).catch(err => {
+      console.error('Email notification failed:', err);
+    });
   });
 });
 
