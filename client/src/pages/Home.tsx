@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 
@@ -16,8 +15,6 @@ interface TutorProfile {
 }
 
 const Home: React.FC = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [tutors, setTutors] = useState<TutorProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,31 +56,19 @@ const Home: React.FC = () => {
         </p>
         
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {user && user.role === 'tutor' ? (
-            <Link to="/dashboard" className="btn btn-large" style={{ 
-              backgroundColor: 'white', 
-              color: '#1e3a8a',
-              border: '2px solid white'
-            }}>
-              Go to Dashboard
-            </Link>
-          ) : (
-            <>
-              <button onClick={scrollToTutors} className="btn btn-large" style={{ 
-                backgroundColor: 'white', 
-                color: '#1e3a8a',
-                border: '2px solid white'
-              }}>
-                Browse Tutors
-              </button>
-              <Link to="/browse-tutors" className="btn btn-large btn-outline" style={{
-                borderColor: 'white',
-                color: 'white'
-              }}>
-                View All Tutors
-              </Link>
-            </>
-          )}
+          <button onClick={scrollToTutors} className="btn btn-large" style={{ 
+            backgroundColor: 'white', 
+            color: '#1e3a8a',
+            border: '2px solid white'
+          }}>
+            Browse Tutors
+          </button>
+          <Link to="/browse-tutors" className="btn btn-large btn-outline" style={{
+            borderColor: 'white',
+            color: 'white'
+          }}>
+            View All Tutors
+          </Link>
         </div>
       </section>
 
@@ -294,14 +279,9 @@ const Home: React.FC = () => {
         <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
           Join GenConnect as a tutor and help bridge the digital divide while building valuable teaching experience.
         </p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link to="/signup?role=tutor" className="btn btn-primary btn-large">
-            Become a Tutor
-          </Link>
-          <Link to="/login" className="btn btn-outline btn-large">
-            Tutor Login
-          </Link>
-        </div>
+        <Link to="/apply" className="btn btn-primary btn-large">
+          Apply to Become a Tutor
+        </Link>
       </section>
     </div>
   );

@@ -262,6 +262,78 @@ router.get('/browse', async (req, res) => {
   });
 });
 
+// Handle tutor applications (no auth required)
+router.post('/apply', (req, res) => {
+  const { name, email, phone, college, major, age, specialties, bio, availability, experience, why_tutor } = req.body;
+  
+  if (!name || !email || !phone || !college || !major || !age || !specialties || !bio || !availability || !why_tutor) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const db = new sqlite3.Database(dbPath);
+  
+  // Check if tutor_applications table exists, create if not
+  db.run(`
+    CREATE TABLE IF NOT EXISTS tutor_applications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      college TEXT NOT NULL,
+      major TEXT NOT NULL,
+      age INTEGER NOT NULL,
+      specialties TEXT NOT NULL,
+      bio TEXT NOT NULL,
+      availability TEXT NOT NULL,
+      experience TEXT,
+      why_tutor TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating tutor_applications table:', err);
+      db.close();
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    // Insert the application
+    const insertQuery = `
+      INSERT INTO tutor_applications 
+      (name, email, phone, college, major, age, specialties, bio, availability, experience, why_tutor)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    db.run(insertQuery, [
+      name, 
+      email, 
+      phone, 
+      college, 
+      major, 
+      age, 
+      JSON.stringify(specialties), 
+      bio, 
+      availability, 
+      experience || '', 
+      why_tutor
+    ], function(err) {
+      db.close();
+      
+      if (err) {
+        console.error('Error inserting tutor application:', err);
+        return res.status(500).json({ error: 'Failed to submit application' });
+      }
+      
+      console.log(`✅ Tutor application submitted: ${name} (${email})`);
+      res.json({ 
+        success: true, 
+        message: 'Application submitted successfully',
+        applicationId: this.lastID
+      });
+    });
+  });
+});
+
 // Handle contact form submissions (no auth required)
 router.post('/contact', (req, res) => {
   const { tutorId, name, email, phone, message, preferredTopics } = req.body;
