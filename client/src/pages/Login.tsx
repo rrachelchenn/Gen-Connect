@@ -340,7 +340,7 @@ const TutorApplication: React.FC = () => {
           borderTop: '1px solid #e5e7eb'
         }}>
           <p style={{ fontSize: '0.95rem', color: '#6b7280' }}>
-            Questions? Email us at <a href="mailto:info@genconnect.org" style={{ color: '#3b82f6' }}>info@genconnect.org</a>
+            Questions? Email us at <a href="mailto:rachel_chen@berkeley.edu" style={{ color: '#3b82f6' }}>rachel_chen@berkeley.edu</a>
           </p>
         </div>
       </div>
