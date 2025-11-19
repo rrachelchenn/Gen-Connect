@@ -5,6 +5,10 @@ const path = require('path');
 const router = express.Router();
 const dbPath = path.join(__dirname, '../database/genconnect.db');
 
+// In-memory storage for Vercel serverless environment
+const contactRequests = [];
+const tutorApplications = [];
+
 // Sample tutor data for fallback (when database is read-only)
 const sampleTutorsData = [
   {
@@ -270,67 +274,46 @@ router.post('/apply', (req, res) => {
     return res.status(400).json({ error: 'Missing required fields' });
   }
   
-  const db = new sqlite3.Database(dbPath);
+  // Create application object
+  const application = {
+    id: Date.now(),
+    name,
+    email,
+    phone,
+    college,
+    major,
+    age,
+    specialties: Array.isArray(specialties) ? specialties : JSON.parse(specialties),
+    bio,
+    availability,
+    experience: experience || '',
+    why_tutor,
+    status: 'pending',
+    created_at: new Date().toISOString()
+  };
   
-  // Check if tutor_applications table exists, create if not
-  db.run(`
-    CREATE TABLE IF NOT EXISTS tutor_applications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      college TEXT NOT NULL,
-      major TEXT NOT NULL,
-      age INTEGER NOT NULL,
-      specialties TEXT NOT NULL,
-      bio TEXT NOT NULL,
-      availability TEXT NOT NULL,
-      experience TEXT,
-      why_tutor TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `, (err) => {
-    if (err) {
-      console.error('Error creating tutor_applications table:', err);
-      db.close();
-      return res.status(500).json({ error: 'Database error' });
-    }
-    
-    // Insert the application
-    const insertQuery = `
-      INSERT INTO tutor_applications 
-      (name, email, phone, college, major, age, specialties, bio, availability, experience, why_tutor)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    
-    db.run(insertQuery, [
-      name, 
-      email, 
-      phone, 
-      college, 
-      major, 
-      age, 
-      JSON.stringify(specialties), 
-      bio, 
-      availability, 
-      experience || '', 
-      why_tutor
-    ], function(err) {
-      db.close();
-      
-      if (err) {
-        console.error('Error inserting tutor application:', err);
-        return res.status(500).json({ error: 'Failed to submit application' });
-      }
-      
-      console.log(`✅ Tutor application submitted: ${name} (${email})`);
-      res.json({ 
-        success: true, 
-        message: 'Application submitted successfully',
-        applicationId: this.lastID
-      });
-    });
+  // Store in memory
+  tutorApplications.push(application);
+  
+  // Log to Vercel console
+  console.log('🎓 NEW TUTOR APPLICATION:');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log(`Name: ${name}`);
+  console.log(`Email: ${email}`);
+  console.log(`Phone: ${phone}`);
+  console.log(`College: ${college}`);
+  console.log(`Major: ${major}`);
+  console.log(`Age: ${age}`);
+  console.log(`Specialties: ${Array.isArray(specialties) ? specialties.join(', ') : specialties}`);
+  console.log(`Availability: ${availability}`);
+  console.log(`Why: ${why_tutor.substring(0, 100)}...`);
+  console.log(`Timestamp: ${application.created_at}`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  
+  res.json({ 
+    success: true, 
+    message: 'Application submitted successfully',
+    applicationId: application.id
   });
 });
 
@@ -342,87 +325,54 @@ router.post('/contact', (req, res) => {
     return res.status(400).json({ error: 'Missing required fields' });
   }
   
-  const db = new sqlite3.Database(dbPath);
+  // Create contact request object
+  const contactRequest = {
+    id: Date.now(),
+    tutor_id: tutorId,
+    name,
+    email,
+    phone,
+    preferred_topics: preferredTopics,
+    message: message || '',
+    status: 'pending',
+    created_at: new Date().toISOString()
+  };
   
-  // Check if contact_requests table exists, create if not
-  db.run(`
-    CREATE TABLE IF NOT EXISTS contact_requests (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tutor_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      preferred_topics TEXT NOT NULL,
-      message TEXT,
-      status TEXT DEFAULT 'pending',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (tutor_id) REFERENCES users(id)
-    )
-  `, (err) => {
-    if (err) {
-      console.error('Error creating contact_requests table:', err);
-      db.close();
-      return res.status(500).json({ error: 'Database error' });
-    }
-    
-    // Insert the contact request
-    const insertQuery = `
-      INSERT INTO contact_requests (tutor_id, name, email, phone, preferred_topics, message)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    
-    db.run(insertQuery, [tutorId, name, email, phone, preferredTopics, message || ''], function(err) {
-      db.close();
-      
-      if (err) {
-        console.error('Error inserting contact request:', err);
-        return res.status(500).json({ error: 'Failed to submit contact request' });
-      }
-      
-      console.log(`✅ Contact request submitted: ${name} -> Tutor ${tutorId}`);
-      res.json({ 
-        success: true, 
-        message: 'Contact request submitted successfully',
-        requestId: this.lastID
-      });
-    });
+  // Store in memory
+  contactRequests.push(contactRequest);
+  
+  // Log to Vercel console (you can view this in Vercel dashboard -> Functions -> Logs)
+  console.log('📬 NEW CONTACT REQUEST:');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log(`From: ${name}`);
+  console.log(`Email: ${email}`);
+  console.log(`Phone: ${phone}`);
+  console.log(`Tutor ID: ${tutorId}`);
+  console.log(`Interested in: ${preferredTopics}`);
+  if (message) console.log(`Message: ${message}`);
+  console.log(`Timestamp: ${contactRequest.created_at}`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  
+  // Return success
+  res.json({ 
+    success: true, 
+    message: 'Contact request submitted successfully',
+    requestId: contactRequest.id
   });
 });
 
-// Get contact requests for a tutor (requires auth)
+// Get contact requests for a tutor (no auth for demo)
 router.get('/:tutorId/contact-requests', (req, res) => {
   const { tutorId } = req.params;
-  const db = new sqlite3.Database(dbPath);
   
-  // Check if contact_requests table exists
-  db.get("SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name='contact_requests'", (err, tableExists) => {
-    if (err || !tableExists || tableExists.count === 0) {
-      console.log('📋 Contact requests table does not exist yet');
-      db.close();
-      return res.json([]);
-    }
-    
-    const query = `
-      SELECT * FROM contact_requests
-      WHERE tutor_id = ?
-      ORDER BY created_at DESC
-    `;
-    
-    db.all(query, [tutorId], (err, requests) => {
-      db.close();
-      
-      if (err) {
-        console.error('Error fetching contact requests:', err);
-        return res.status(500).json({ error: 'Failed to fetch contact requests' });
-      }
-      
-      console.log(`✅ Fetched ${requests.length} contact requests for tutor ${tutorId}`);
-      res.json(requests);
-    });
-  });
+  // Filter requests for this tutor from in-memory storage
+  const tutorRequests = contactRequests.filter(req => req.tutor_id == tutorId);
+  
+  console.log(`✅ Fetched ${tutorRequests.length} contact requests for tutor ${tutorId}`);
+  res.json(tutorRequests);
 });
 
-// Update contact request status
+// Update contact request status (in-memory)
 router.patch('/contact-requests/:requestId', (req, res) => {
   const { requestId } = req.params;
   const { status } = req.body;
@@ -431,21 +381,15 @@ router.patch('/contact-requests/:requestId', (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
   
-  const db = new sqlite3.Database(dbPath);
-  
-  const query = `UPDATE contact_requests SET status = ? WHERE id = ?`;
-  
-  db.run(query, [status, requestId], function(err) {
-    db.close();
-    
-    if (err) {
-      console.error('Error updating contact request:', err);
-      return res.status(500).json({ error: 'Failed to update request status' });
-    }
-    
+  // Find and update the request in memory
+  const request = contactRequests.find(r => r.id == requestId);
+  if (request) {
+    request.status = status;
     console.log(`✅ Updated contact request ${requestId} to ${status}`);
     res.json({ success: true, message: 'Status updated' });
-  });
+  } else {
+    res.status(404).json({ error: 'Request not found' });
+  }
 });
 
 // Get tutor reviews
