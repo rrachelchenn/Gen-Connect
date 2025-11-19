@@ -23,7 +23,7 @@ const sendContactRequestNotification = async (contactData) => {
   try {
     const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
-      to: 'rachelchen0211@gmail.com',
+      to: 'rachel_chen@berkeley.edu',
       subject: `📬 New Contact Request for ${tutorName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -56,7 +56,7 @@ const sendContactRequestNotification = async (contactData) => {
       return false;
     }
 
-    console.log('✅ Contact request email sent to rachelchen0211@gmail.com');
+    console.log('✅ Contact request email sent to rachel_chen@berkeley.edu');
     return true;
   } catch (error) {
     console.error('❌ Failed to send contact email:', error.message);
@@ -77,7 +77,7 @@ const sendTutorApplicationNotification = async (applicationData) => {
   try {
     const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
-      to: 'rachelchen0211@gmail.com',
+      to: 'rachel_chen@berkeley.edu',
       subject: `🎓 New Tutor Application from ${name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -120,7 +120,7 @@ const sendTutorApplicationNotification = async (applicationData) => {
       return false;
     }
 
-    console.log('✅ Tutor application email sent to rachelchen0211@gmail.com');
+    console.log('✅ Tutor application email sent to rachel_chen@berkeley.edu');
     return true;
   } catch (error) {
     console.error('❌ Failed to send application email:', error.message);
