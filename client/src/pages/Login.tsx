@@ -82,7 +82,7 @@ const TutorApplication: React.FC = () => {
             </p>
             <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
               We'll review your application and reach out to you within 3-5 business days to schedule an interview.
-              Check your email at <strong>{formData.email}</strong> for updates.
+              Check your email for updates.
             </p>
             <Link to="/" className="btn btn-primary">
               Return to Home
