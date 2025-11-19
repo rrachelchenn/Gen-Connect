@@ -203,67 +203,15 @@ const sampleReviewsData = [
   { id: 16, tutor_id: 108, reviewer_name: 'Edward Brown', rating: 5, comment: 'Olivia created such a comfortable learning environment. I never felt embarrassed to ask questions. She taught me how to video call my son overseas!', session_topic: 'Video Calling', date: '2025-01-09' }
 ];
 
-// Get all tutors for browsing
-router.get('/browse', async (req, res) => {
-  const db = new sqlite3.Database(dbPath);
-  
-  // Check if tutor_profiles table exists and has data
-  db.get("SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name='tutor_profiles'", (err, tableExists) => {
-    if (err) {
-      console.log('❌ Database error, using sample data:', err.message);
-      db.close();
-      return res.json(sampleTutorsData);
-    }
-    
-    if (!tableExists || tableExists.count === 0) {
-      console.log('📋 Tutor profiles table missing, using sample data');
-      db.close();
-      return res.json(sampleTutorsData);
-    }
-    
-    // Table exists, try to fetch data
-    const query = `
-      SELECT 
-        u.*,
-        tp.age,
-        tp.industry,
-        tp.specialties,
-        tp.hourly_rate,
-        tp.total_sessions,
-        tp.average_rating,
-        tp.total_reviews,
-        tp.tutoring_style,
-        tp.availability_hours,
-        tp.experience_years
-      FROM users u
-      LEFT JOIN tutor_profiles tp ON u.id = tp.user_id
-      WHERE u.role = 'tutor'
-      ORDER BY tp.average_rating DESC, tp.total_sessions DESC
-    `;
-    
-    db.all(query, [], (err, tutors) => {
-      db.close();
-      
-      if (err) {
-        console.log('❌ Query error, using sample data:', err.message);
-        return res.json(sampleTutorsData);
-      }
-      
-      if (!tutors || tutors.length === 0) {
-        console.log('📋 No tutors in database, using sample data');
-        return res.json(sampleTutorsData);
-      }
-      
-      // Parse specialties JSON
-      const formattedTutors = tutors.map(tutor => ({
-        ...tutor,
-        specialties: tutor.specialties ? JSON.parse(tutor.specialties) : []
-      }));
-      
-      console.log('✅ Successfully fetched tutors from database');
-      res.json(formattedTutors);
-    });
-  });
+// Get all tutors for browsing - simplified for Vercel
+router.get('/browse', (req, res) => {
+  try {
+    console.log('✅ Returning sample tutors');
+    res.json(sampleTutorsData);
+  } catch (error) {
+    console.error('Error in /browse:', error);
+    res.status(500).json({ error: 'Failed to load tutors' });
+  }
 });
 
 // Handle tutor applications (no auth required)
@@ -393,50 +341,17 @@ router.patch('/contact-requests/:requestId', (req, res) => {
 });
 
 // Get tutor reviews
+// Get tutor reviews - simplified for Vercel
 router.get('/:tutorId/reviews', (req, res) => {
-  const { tutorId } = req.params;
-  const db = new sqlite3.Database(dbPath);
-  
-  // Check if reviews table exists
-  db.get("SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name='tutor_reviews'", (err, tableExists) => {
-    if (err || !tableExists || tableExists.count === 0) {
-      console.log('📋 Reviews table missing, using sample data');
-      db.close();
-      // Filter sample reviews for this tutor
-      const tutorReviews = sampleReviewsData.filter(review => review.tutor_id == tutorId);
-      return res.json(tutorReviews);
-    }
-    
-    const query = `
-      SELECT 
-        r.*,
-        u.name as reviewer_name
-      FROM tutor_reviews r
-      JOIN users u ON r.reviewer_id = u.id
-      WHERE r.tutor_id = ?
-      ORDER BY r.created_at DESC
-      LIMIT 20
-    `;
-    
-    db.all(query, [tutorId], (err, reviews) => {
-      db.close();
-      
-      if (err) {
-        console.log('❌ Reviews query error, using sample data:', err.message);
-        const tutorReviews = sampleReviewsData.filter(review => review.tutor_id == tutorId);
-        return res.json(tutorReviews);
-      }
-      
-      if (!reviews || reviews.length === 0) {
-        console.log('📋 No reviews in database, using sample data');
-        const tutorReviews = sampleReviewsData.filter(review => review.tutor_id == tutorId);
-        return res.json(tutorReviews);
-      }
-      
-      console.log('✅ Successfully fetched reviews from database');
-      res.json(reviews);
-    });
-  });
+  try {
+    const { tutorId } = req.params;
+    const tutorReviews = sampleReviewsData.filter(review => review.tutor_id == tutorId);
+    console.log(`✅ Returning ${tutorReviews.length} reviews for tutor ${tutorId}`);
+    res.json(tutorReviews);
+  } catch (error) {
+    console.error('Error in /reviews:', error);
+    res.status(500).json({ error: 'Failed to load reviews' });
+  }
 });
 
 module.exports = router;
