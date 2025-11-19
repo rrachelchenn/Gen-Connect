@@ -2,6 +2,19 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+// Safely import email notifications - won't crash if unavailable
+let sendContactRequestNotification = async () => { console.log('⚠️ Email notifications disabled'); return false; };
+let sendTutorApplicationNotification = async () => { console.log('⚠️ Email notifications disabled'); return false; };
+
+try {
+  const emailModule = require('../utils/emailNotifications');
+  sendContactRequestNotification = emailModule.sendContactRequestNotification;
+  sendTutorApplicationNotification = emailModule.sendTutorApplicationNotification;
+  console.log('✅ Email notifications loaded successfully');
+} catch (error) {
+  console.warn('⚠️ Email notifications unavailable:', error.message);
+}
+
 const router = express.Router();
 const dbPath = path.join(__dirname, '../database/genconnect.db');
 
@@ -258,6 +271,12 @@ router.post('/apply', (req, res) => {
   console.log(`Timestamp: ${application.created_at}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
+  // Send email notification (async, won't block response)
+  sendTutorApplicationNotification(application).catch(err => {
+    console.error('Email notification failed:', err);
+  });
+  
+  // Return success immediately (don't wait for email)
   res.json({ 
     success: true, 
     message: 'Application submitted successfully',
@@ -289,19 +308,32 @@ router.post('/contact', (req, res) => {
   // Store in memory
   contactRequests.push(contactRequest);
   
+  // Find tutor name
+  const tutor = sampleTutorsData.find(t => t.id == tutorId);
+  const tutorName = tutor ? tutor.name : `Tutor #${tutorId}`;
+  
   // Log to Vercel console (you can view this in Vercel dashboard -> Functions -> Logs)
   console.log('📬 NEW CONTACT REQUEST:');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`From: ${name}`);
   console.log(`Email: ${email}`);
   console.log(`Phone: ${phone}`);
-  console.log(`Tutor ID: ${tutorId}`);
+  console.log(`Tutor: ${tutorName} (ID: ${tutorId})`);
   console.log(`Interested in: ${preferredTopics}`);
   if (message) console.log(`Message: ${message}`);
   console.log(`Timestamp: ${contactRequest.created_at}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  // Return success
+  // Send email notification (async, won't block response)
+  sendContactRequestNotification({
+    ...contactRequest,
+    tutorName,
+    preferredTopics
+  }).catch(err => {
+    console.error('Email notification failed:', err);
+  });
+  
+  // Return success immediately (don't wait for email)
   res.json({ 
     success: true, 
     message: 'Contact request submitted successfully',
