@@ -14,12 +14,25 @@ interface TutorProfile {
   availability_hours: string;
 }
 
+interface Article {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  estimated_time: string;
+  topics: string[];
+  content: string;
+}
+
 const Home: React.FC = () => {
   const [tutors, setTutors] = useState<TutorProfile[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTutors();
+    fetchArticles();
   }, []);
 
   const fetchTutors = async () => {
@@ -30,6 +43,15 @@ const Home: React.FC = () => {
       console.error('Error fetching tutors:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchArticles = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/tutors/articles`);
+      setArticles(response.data.slice(0, 6)); // Show first 6 articles on home page
+    } catch (err) {
+      console.error('Error fetching articles:', err);
     }
   };
 
@@ -97,9 +119,9 @@ const Home: React.FC = () => {
             <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0 }}>
               <li style={{ marginBottom: '0.5rem' }}>✓ Make a real difference</li>
               <li style={{ marginBottom: '0.5rem' }}>✓ Build teaching experience</li>
-              <li style={{ marginBottom: '0.5rem' }}>✓ Flexible hours</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Flexible volunteer hours</li>
               <li style={{ marginBottom: '0.5rem' }}>✓ Help bridge the digital gap</li>
-              <li style={{ marginBottom: '0.5rem' }}>✓ Earn while helping others</li>
+              <li style={{ marginBottom: '0.5rem' }}>✓ Give back to your community</li>
             </ul>
           </div>
         </div>
@@ -165,6 +187,78 @@ const Home: React.FC = () => {
             <div className="tag">Security</div>
             <div className="tag">Scam Prevention</div>
           </div>
+        </div>
+      </section>
+
+      {/* Discussion Articles / Lessons Section */}
+      <section style={{ marginTop: '4rem' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          What You'll Learn
+        </h2>
+        <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '1.1rem', marginBottom: '3rem', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
+          Browse our curated discussion topics and lessons designed specifically for seniors. 
+          Each tutor specializes in different topics - find one that matches your learning goals!
+        </p>
+        
+        <div className="grid grid-3">
+          {articles.map(article => (
+            <div key={article.id} className="card">
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'start',
+                marginBottom: '1rem'
+              }}>
+                <h4 style={{ margin: 0, flex: 1 }}>{article.title}</h4>
+                <span className="tag" style={{ marginLeft: '0.5rem' }}>
+                  {article.difficulty}
+                </span>
+              </div>
+              
+              <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '1rem' }}>
+                {article.description}
+              </p>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                  <strong>Category:</strong> {article.category} • <strong>Time:</strong> {article.estimated_time}
+                </div>
+              </div>
+              
+              <div style={{ 
+                borderTop: '1px solid #e5e7eb', 
+                paddingTop: '0.75rem',
+                fontSize: '0.85rem',
+                color: '#6b7280'
+              }}>
+                <strong>Topics Covered:</strong>
+                <div style={{ marginTop: '0.5rem' }}>
+                  {article.topics.slice(0, 3).map(topic => (
+                    <span key={topic} className="tag" style={{ 
+                      marginRight: '0.25rem', 
+                      marginBottom: '0.25rem', 
+                      display: 'inline-block',
+                      fontSize: '0.75rem'
+                    }}>
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div style={{ 
+          textAlign: 'center', 
+          marginTop: '2rem', 
+          padding: '1.5rem',
+          backgroundColor: '#f0f9ff',
+          borderRadius: '8px'
+        }}>
+          <p style={{ fontSize: '1.05rem', color: '#1e3a8a', marginBottom: '0' }}>
+            💡 <strong>All lessons are completely free!</strong> Our tutors will guide you through these topics at your own pace.
+          </p>
         </div>
       </section>
 

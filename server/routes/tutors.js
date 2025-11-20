@@ -22,6 +22,130 @@ const dbPath = path.join(__dirname, '../database/genconnect.db');
 const contactRequests = [];
 const tutorApplications = [];
 
+// Discussion articles/lessons for senior citizens
+const discussionArticles = [
+  {
+    id: 1,
+    title: 'Sending Your First Text Message',
+    description: 'Learn the basics of texting - from opening your messages app to sending photos and emojis to family.',
+    category: 'Communication',
+    difficulty: 'Beginner',
+    estimated_time: '30 minutes',
+    topics: ['Smartphone Basics', 'Texting', 'Emojis', 'Group Messages'],
+    content: 'Master the art of staying in touch with family through text messaging. We\'ll cover how to start a conversation, send photos, use emojis, and manage group chats.'
+  },
+  {
+    id: 2,
+    title: 'Video Calling with FaceTime & Zoom',
+    description: 'See your loved ones face-to-face no matter the distance. Learn how to make video calls on your phone or computer.',
+    category: 'Communication',
+    difficulty: 'Beginner',
+    estimated_time: '45 minutes',
+    topics: ['Video Calling', 'FaceTime', 'Zoom', 'Family Connection'],
+    content: 'Connect with family through video calls. We\'ll walk through setting up FaceTime on your iPhone, joining Zoom meetings, and troubleshooting common issues like audio and camera settings.'
+  },
+  {
+    id: 3,
+    title: 'Online Banking Safety & Security',
+    description: 'Safely manage your finances online while protecting yourself from scams and fraud.',
+    category: 'Finance',
+    difficulty: 'Intermediate',
+    estimated_time: '60 minutes',
+    topics: ['Online Banking', 'Security', 'Fraud Prevention', 'Two-Factor Authentication'],
+    content: 'Learn to bank online with confidence. We\'ll cover logging in securely, checking balances, paying bills, and most importantly - how to spot and avoid phishing scams and fraud attempts.'
+  },
+  {
+    id: 4,
+    title: 'Avoiding Email & Phone Scams',
+    description: 'Recognize red flags and protect yourself from common scams targeting seniors.',
+    category: 'Safety',
+    difficulty: 'Beginner',
+    estimated_time: '45 minutes',
+    topics: ['Internet Safety', 'Scam Prevention', 'Email Security', 'Phone Safety'],
+    content: 'Protect yourself from scammers with this essential guide. Learn to identify phishing emails, suspicious phone calls, fake tech support scams, and what to do if you think you\'ve been targeted.'
+  },
+  {
+    id: 5,
+    title: 'Using Facebook to Stay Connected',
+    description: 'Join Facebook to see what your grandchildren are up to and share your own updates.',
+    category: 'Social Media',
+    difficulty: 'Beginner',
+    estimated_time: '60 minutes',
+    topics: ['Social Media', 'Facebook', 'Photo Sharing', 'Privacy Settings'],
+    content: 'Get started with Facebook and stay connected with family. We\'ll create your account, add friends, post photos, comment on updates, and adjust privacy settings so you\'re comfortable.'
+  },
+  {
+    id: 6,
+    title: 'Shopping Safely on Amazon',
+    description: 'Order groceries, essentials, and gifts online with confidence and security.',
+    category: 'Shopping',
+    difficulty: 'Intermediate',
+    estimated_time: '45 minutes',
+    topics: ['Online Shopping', 'Amazon', 'Payment Security', 'Returns'],
+    content: 'Master online shopping with Amazon. Learn to search for products, read reviews, compare prices, checkout securely, track packages, and handle returns or issues.'
+  },
+  {
+    id: 7,
+    title: 'Taking & Organizing Photos on Your Phone',
+    description: 'Capture memories and keep your photo library organized and backed up.',
+    category: 'Photography',
+    difficulty: 'Beginner',
+    estimated_time: '45 minutes',
+    topics: ['Photo Sharing', 'Camera', 'Photo Organization', 'Cloud Backup'],
+    content: 'Take great photos and keep them organized. We\'ll cover camera basics, creating albums, editing photos, backing up to the cloud, and sharing with family.'
+  },
+  {
+    id: 8,
+    title: 'Setting Up Your Smart Home Devices',
+    description: 'Control lights, thermostat, and more with voice commands using Alexa or Google Home.',
+    category: 'Smart Home',
+    difficulty: 'Intermediate',
+    estimated_time: '60 minutes',
+    topics: ['Smart Home', 'Voice Assistants', 'Alexa', 'Google Home'],
+    content: 'Make your home smarter and more convenient. Learn to set up Alexa or Google Home, control smart lights and thermostats, set reminders, play music, and ask questions.'
+  },
+  {
+    id: 9,
+    title: 'Navigating with Google Maps',
+    description: 'Never get lost again - learn to use GPS navigation on your smartphone.',
+    category: 'Navigation',
+    difficulty: 'Beginner',
+    estimated_time: '30 minutes',
+    topics: ['Smartphone Basics', 'Navigation', 'Google Maps', 'Directions'],
+    content: 'Use your phone as a GPS navigator. We\'ll cover entering addresses, following turn-by-turn directions, finding nearby places, and saving favorite locations.'
+  },
+  {
+    id: 10,
+    title: 'Managing Your Email Inbox',
+    description: 'Keep your email organized, delete spam, and find important messages quickly.',
+    category: 'Communication',
+    difficulty: 'Beginner',
+    estimated_time: '45 minutes',
+    topics: ['Email & Messaging', 'Organization', 'Spam Filtering', 'Attachments'],
+    content: 'Tame your inbox and stay organized. Learn to compose emails, reply to messages, manage folders, filter spam, open attachments safely, and search for old emails.'
+  },
+  {
+    id: 11,
+    title: 'Using Venmo & Digital Payments',
+    description: 'Send and receive money digitally with friends and family.',
+    category: 'Finance',
+    difficulty: 'Intermediate',
+    estimated_time: '45 minutes',
+    topics: ['Digital Payments', 'Venmo', 'PayPal', 'Security'],
+    content: 'Join the digital payment revolution safely. We\'ll set up Venmo or PayPal, link your bank account, send and request money, and discuss security best practices.'
+  },
+  {
+    id: 12,
+    title: 'Creating a Photo Book or Calendar',
+    description: 'Turn your digital photos into beautiful printed keepsakes.',
+    category: 'Photography',
+    difficulty: 'Intermediate',
+    estimated_time: '60 minutes',
+    topics: ['Photo Sharing', 'Photo Books', 'Shutterfly', 'Gifts'],
+    content: 'Create lasting memories with photo books and calendars. Learn to use services like Shutterfly or Costco Photo Center to design and order custom photo products.'
+  }
+];
+
 // Sample tutor data for fallback (when database is read-only)
 const sampleTutorsData = [
   {
@@ -35,7 +159,7 @@ const sampleTutorsData = [
     age: 20,
     industry: 'Technology',
     specialties: ['Smartphone Basics', 'Video Calling', 'Email & Messaging', 'Photo Sharing'],
-    hourly_rate: 25.00,
+    favorite_lessons: [1, 2, 7, 9],
     total_sessions: 42,
     average_rating: 4.9,
     total_reviews: 14,
@@ -54,7 +178,7 @@ const sampleTutorsData = [
     age: 21,
     industry: 'Business',
     specialties: ['Online Banking', 'Online Shopping', 'Internet Safety', 'Smartphone Basics'],
-    hourly_rate: 28.00,
+    favorite_lessons: [3, 6, 11, 4],
     total_sessions: 38,
     average_rating: 4.8,
     total_reviews: 12,
@@ -73,7 +197,7 @@ const sampleTutorsData = [
     age: 22,
     industry: 'Healthcare',
     specialties: ['Video Calling', 'Email & Messaging', 'Photo Sharing', 'Social Media'],
-    hourly_rate: 23.00,
+    favorite_lessons: [2, 5, 7, 10],
     total_sessions: 56,
     average_rating: 5.0,
     total_reviews: 18,
@@ -92,7 +216,7 @@ const sampleTutorsData = [
     age: 19,
     industry: 'Technology',
     specialties: ['Smartphone Basics', 'Photo Sharing', 'Email & Messaging', 'Computer Basics'],
-    hourly_rate: 22.00,
+    favorite_lessons: [1, 7, 9, 10],
     total_sessions: 34,
     average_rating: 4.7,
     total_reviews: 11,
@@ -111,7 +235,7 @@ const sampleTutorsData = [
     age: 20,
     industry: 'Education',
     specialties: ['Social Media', 'Video Calling', 'Smartphone Basics', 'Email & Messaging'],
-    hourly_rate: 24.00,
+    favorite_lessons: [5, 2, 1, 12],
     total_sessions: 47,
     average_rating: 4.9,
     total_reviews: 15,
@@ -130,7 +254,7 @@ const sampleTutorsData = [
     age: 21,
     industry: 'Finance',
     specialties: ['Online Banking', 'Internet Safety', 'Online Shopping', 'Email & Messaging'],
-    hourly_rate: 26.00,
+    favorite_lessons: [3, 4, 6, 11],
     total_sessions: 41,
     average_rating: 4.8,
     total_reviews: 13,
@@ -149,7 +273,7 @@ const sampleTutorsData = [
     age: 22,
     industry: 'Design',
     specialties: ['Photo Sharing', 'Social Media', 'Smartphone Basics', 'Video Calling'],
-    hourly_rate: 23.00,
+    favorite_lessons: [7, 5, 12, 2],
     total_sessions: 39,
     average_rating: 4.9,
     total_reviews: 12,
@@ -168,7 +292,7 @@ const sampleTutorsData = [
     age: 23,
     industry: 'Technology',
     specialties: ['Computer Basics', 'Email & Messaging', 'Internet Safety', 'Online Shopping'],
-    hourly_rate: 25.00,
+    favorite_lessons: [10, 4, 6, 8],
     total_sessions: 63,
     average_rating: 5.0,
     total_reviews: 20,
@@ -187,7 +311,7 @@ const sampleTutorsData = [
     age: 20,
     industry: 'Education',
     specialties: ['Smartphone Basics', 'Video Calling', 'Photo Sharing', 'Social Media'],
-    hourly_rate: 22.00,
+    favorite_lessons: [1, 2, 5, 7],
     total_sessions: 45,
     average_rating: 4.9,
     total_reviews: 16,
@@ -224,6 +348,34 @@ router.get('/browse', (req, res) => {
   } catch (error) {
     console.error('Error in /browse:', error);
     res.status(500).json({ error: 'Failed to load tutors' });
+  }
+});
+
+// Get all discussion articles/lessons
+router.get('/articles', (req, res) => {
+  try {
+    console.log('✅ Returning discussion articles');
+    res.json(discussionArticles);
+  } catch (error) {
+    console.error('Error in /articles:', error);
+    res.status(500).json({ error: 'Failed to load articles' });
+  }
+});
+
+// Get a specific article by ID
+router.get('/articles/:articleId', (req, res) => {
+  try {
+    const { articleId } = req.params;
+    const article = discussionArticles.find(a => a.id == articleId);
+    if (article) {
+      console.log(`✅ Returning article ${articleId}`);
+      res.json(article);
+    } else {
+      res.status(404).json({ error: 'Article not found' });
+    }
+  } catch (error) {
+    console.error('Error in /articles/:articleId:', error);
+    res.status(500).json({ error: 'Failed to load article' });
   }
 });
 

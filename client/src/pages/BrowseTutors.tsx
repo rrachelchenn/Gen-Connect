@@ -14,13 +14,24 @@ interface TutorProfile {
   age: number;
   industry: string;
   specialties: string[];
-  hourly_rate: number;
+  favorite_lessons: number[];
   total_sessions: number;
   average_rating: number;
   total_reviews: number;
   tutoring_style: string;
   availability_hours: string;
   experience_years: number;
+}
+
+interface Article {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  estimated_time: string;
+  topics: string[];
+  content: string;
 }
 
 interface Review {
@@ -43,13 +54,13 @@ const BrowseTutors: React.FC = () => {
   const [tutorReviews, setTutorReviews] = useState<Review[]>([]);
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactTutor, setContactTutor] = useState<TutorProfile | null>(null);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
 
   // Filter states
   const [filters, setFilters] = useState({
     industry: '',
     specialty: '',
     minRating: 0,
-    maxRate: 100,
     ageRange: '',
     experience: ''
   });
@@ -67,6 +78,7 @@ const BrowseTutors: React.FC = () => {
 
   useEffect(() => {
     fetchTutors();
+    fetchArticles();
   }, []);
 
   // Auto-open contact form if tutor ID is in URL
@@ -97,6 +109,15 @@ const BrowseTutors: React.FC = () => {
     }
   };
 
+  const fetchArticles = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/tutors/articles`);
+      setAllArticles(response.data);
+    } catch (err: any) {
+      console.error('Error fetching articles:', err);
+    }
+  };
+
   const fetchTutorReviews = async (tutorId: number) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/tutors/${tutorId}/reviews`);
@@ -122,10 +143,6 @@ const BrowseTutors: React.FC = () => {
 
     if (filters.minRating > 0) {
       filtered = filtered.filter(tutor => tutor.average_rating >= filters.minRating);
-    }
-
-    if (filters.maxRate < 100) {
-      filtered = filtered.filter(tutor => tutor.hourly_rate <= filters.maxRate);
     }
 
     if (filters.ageRange) {
@@ -155,7 +172,6 @@ const BrowseTutors: React.FC = () => {
       industry: '',
       specialty: '',
       minRating: 0,
-      maxRate: 100,
       ageRange: '',
       experience: ''
     });
@@ -322,15 +338,10 @@ const BrowseTutors: React.FC = () => {
               </p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <div>
-                <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                  {tutor.total_sessions} sessions completed
-                </span>
-              </div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#059669' }}>
-                ${tutor.hourly_rate}/hour
-              </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                {tutor.total_sessions} sessions completed • {tutor.experience_years} years experience
+              </span>
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -389,7 +400,7 @@ const BrowseTutors: React.FC = () => {
                   <p><strong>Rating:</strong> {renderStars(selectedTutor.average_rating)} ({selectedTutor.average_rating}/5)</p>
                   <p><strong>Sessions:</strong> {selectedTutor.total_sessions} completed</p>
                   <p><strong>Reviews:</strong> {selectedTutor.total_reviews}</p>
-                  <p><strong>Rate:</strong> ${selectedTutor.hourly_rate}/hour</p>
+                  <p style={{ color: '#059669', fontWeight: 'bold' }}>✓ Free for All</p>
                 </div>
               </div>
 
@@ -407,6 +418,30 @@ const BrowseTutors: React.FC = () => {
                       {specialty}
                     </span>
                   ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h4>Favorite Lessons to Teach</h4>
+                <div style={{ marginTop: '0.5rem' }}>
+                  {selectedTutor.favorite_lessons.map(lessonId => {
+                    const article = allArticles.find(a => a.id === lessonId);
+                    return article ? (
+                      <div key={article.id} className="card" style={{ marginBottom: '0.75rem', padding: '0.75rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                          <div style={{ flex: 1 }}>
+                            <strong style={{ fontSize: '0.95rem' }}>{article.title}</strong>
+                            <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>
+                              {article.description}
+                            </p>
+                          </div>
+                          <span className="tag" style={{ marginLeft: '0.5rem' }}>
+                            {article.difficulty}
+                          </span>
+                        </div>
+                      </div>
+                    ) : null;
+                  })}
                 </div>
               </div>
 
