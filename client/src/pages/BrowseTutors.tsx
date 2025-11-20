@@ -400,7 +400,6 @@ const BrowseTutors: React.FC = () => {
                   <p><strong>Rating:</strong> {renderStars(selectedTutor.average_rating)} ({selectedTutor.average_rating}/5)</p>
                   <p><strong>Sessions:</strong> {selectedTutor.total_sessions} completed</p>
                   <p><strong>Reviews:</strong> {selectedTutor.total_reviews}</p>
-                  <p style={{ color: '#059669', fontWeight: 'bold' }}>✓ Free for All</p>
                 </div>
               </div>
 
@@ -427,10 +426,30 @@ const BrowseTutors: React.FC = () => {
                   {selectedTutor.favorite_lessons.map(lessonId => {
                     const article = allArticles.find(a => a.id === lessonId);
                     return article ? (
-                      <div key={article.id} className="card" style={{ marginBottom: '0.75rem', padding: '0.75rem' }}>
+                      <Link 
+                        key={article.id} 
+                        to={`/lessons#article-${article.id}`}
+                        className="card" 
+                        style={{ 
+                          marginBottom: '0.75rem', 
+                          padding: '0.75rem',
+                          textDecoration: 'none',
+                          display: 'block',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s, box-shadow 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '';
+                        }}
+                      >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                           <div style={{ flex: 1 }}>
-                            <strong style={{ fontSize: '0.95rem' }}>{article.title}</strong>
+                            <strong style={{ fontSize: '0.95rem', color: '#1e3a8a' }}>{article.title}</strong>
                             <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>
                               {article.description}
                             </p>
@@ -439,7 +458,7 @@ const BrowseTutors: React.FC = () => {
                             {article.difficulty}
                           </span>
                         </div>
-                      </div>
+                      </Link>
                     ) : null;
                   })}
                 </div>

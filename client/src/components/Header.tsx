@@ -13,6 +13,9 @@ const Header: React.FC = () => {
           <Link to="/browse-tutors" className="nav-link">
             Browse Tutors
           </Link>
+          <Link to="/lessons" className="nav-link">
+            Lessons
+          </Link>
           <Link to="/apply" className="btn btn-primary">
             Become a Tutor
           </Link>
