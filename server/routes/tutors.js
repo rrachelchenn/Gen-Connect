@@ -515,12 +515,37 @@ router.get('/browse', (req, res) => {
       return res.json(sampleTutorsData);
     }
     
-    // Parse specialties JSON and format data
-    const tutors = rows.map(row => ({
-      ...row,
-      specialties: typeof row.specialties === 'string' ? JSON.parse(row.specialties) : row.specialties,
-      favorite_lessons: [] // Optional field
-    }));
+    // Map specialties to relevant lesson IDs
+    const specialtyLessons = {
+      'Smartphone Basics': [1, 9],
+      'Video Calling': [2],
+      'Email & Messaging': [10],
+      'Internet Safety': [4],
+      'Computer Basics': [9],
+      'Online Shopping': [6],
+      'Photo Sharing': [7, 12],
+      'Social Media': [5],
+      'Online Banking': [3],
+      'Google Suite': [10]
+    };
+    
+    // Parse specialties JSON and add favorite lessons based on specialties
+    const tutors = rows.map(row => {
+      const specialties = typeof row.specialties === 'string' ? JSON.parse(row.specialties) : row.specialties;
+      
+      // Generate favorite lessons based on tutor's specialties
+      const favoriteLessons = new Set();
+      specialties.forEach(specialty => {
+        const lessonIds = specialtyLessons[specialty] || [];
+        lessonIds.forEach(id => favoriteLessons.add(id));
+      });
+      
+      return {
+        ...row,
+        specialties,
+        favorite_lessons: Array.from(favoriteLessons).slice(0, 5) // Limit to 5 lessons
+      };
+    });
     
     console.log(`✅ Returning ${tutors.length} tutors from database`);
     res.json(tutors);

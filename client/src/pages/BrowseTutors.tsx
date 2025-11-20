@@ -318,7 +318,7 @@ const BrowseTutors: React.FC = () => {
               <p><strong>College:</strong> {tutor.college}</p>
               <p><strong>Major:</strong> {tutor.major}</p>
               <p><strong>Industry:</strong> {tutor.industry}</p>
-              <p><strong>Experience:</strong> {tutor.experience_years} years</p>
+              <p><strong>Experience:</strong> {tutor.experience_years === 0 ? '< 1 year' : `${tutor.experience_years} ${tutor.experience_years === 1 ? 'year' : 'years'}`}</p>
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
@@ -340,7 +340,7 @@ const BrowseTutors: React.FC = () => {
 
             <div style={{ marginBottom: '1rem' }}>
               <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                {tutor.total_sessions} sessions completed • {tutor.experience_years} years experience
+                {tutor.total_sessions} sessions completed • {tutor.experience_years === 0 ? '< 1 year' : `${tutor.experience_years} ${tutor.experience_years === 1 ? 'year' : 'years'}`} experience
               </span>
             </div>
 
